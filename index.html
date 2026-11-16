@@ -27,6 +27,10 @@ body{
   min-height:100vh; touch-action:manipulation;
 }
 #app{max-width:520px;margin:0 auto;padding-block:0 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.icon-btn.back{font-size:14px;font-weight:800;padding:8px 10px;white-space:nowrap;flex-shrink:0}
+[hidden]{display:none!important}
+.topbar .logo{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.topbar>.row:first-child{min-width:0}
 .icon-btn.warn{border-color:var(--red);background:#4a1018}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
 .logo{font-weight:800;letter-spacing:.5px;color:var(--gold)}
@@ -116,7 +120,10 @@ details.peek summary{cursor:pointer;color:var(--muted);font-weight:600}
 <body>
 <div id="app">
   <div class="topbar">
-    <span class="logo">🏴‍☠️ Grand Line Çarkı</span>
+    <div class="row">
+      <button class="icon-btn back" id="backBtn" title="Geri" hidden>← Geri</button>
+      <span class="logo">🏴‍☠️ Grand Line Çarkı</span>
+    </div>
     <div class="row">
       <button class="icon-btn" id="fastBtn" title="Hızlı mod">⚡</button>
       <button class="icon-btn" id="homeBtn" title="Ana menü">🏠</button>
@@ -436,6 +443,9 @@ const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const state = {
   fast:false, sound:true, players:[], usedFruits:new Set(), usedSwords:new Set(),
   current:null, replay:null, singleDiff:DIFFS[1], multiCount:2,
+  // Geri tuşu: oyunda verilen her sonuç sırayla kaydedilir. Geri basınca oyun
+  // son çark hariç bu kayıttan anında yeniden kurulur ve o çark tekrar çevrilir.
+  history:[], queue:[], restart:null, setupScreen:'scr-home', gameOver:false,
 };
 
 /* ---------- audio ---------- */
@@ -510,7 +520,9 @@ class Wheel{
     return this.segs.length-1;
   }
   indexAtPointer(){ const a=mod(-Math.PI/2-this.rot,TAU); return this.segs.findIndex(s=>a>=s.start&&a<s.end); }
+  stop(){ this.spinId=(this.spinId||0)+1; }
   spin(duration){
+    const id=this.spinId=(this.spinId||0)+1;
     return new Promise(res=>{
       const s=this.segs[this.pick()], span=s.end-s.start;
       const target=s.start+span*(0.5+(Math.random()-0.5)*0.7);
@@ -519,6 +531,7 @@ class Wheel{
       const end=startRot+delta+(duration<1500?3:6)*TAU;
       const t0=performance.now(); let last=this.indexAtPointer();
       const step=now=>{
+        if(id!==this.spinId) return; // geri tuşuyla iptal edildi
         const t=Math.min(1,(now-t0)/duration), e=1-Math.pow(1-t,4);
         this.rot=startRot+(end-startRot)*e; this.draw();
         const i=this.indexAtPointer(); if(i!==last){ last=i; tick(); }
@@ -540,6 +553,7 @@ const wheel=new Wheel($('#wheel'));
    ========================================================= */
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  $('#backBtn').hidden = id==='scr-home' || (id==='scr-info' && state.gameOver);
   window.scrollTo(0,0);
   if(id==='scr-wheel') requestAnimationFrame(()=>wheel.draw());
 }
@@ -553,8 +567,14 @@ let gameToken=0; // ana menüye dönüldüğünde eski akışı iptal eder
 class Abort extends Error{}
 function check(tok){ if(tok!==gameToken) throw new Abort(); }
 
-async function spin({who,title,sub='',items,tok}){
+async function spin({who,title,sub='',items,tok,final=false}){
   check(tok);
+  // Geri alma sonrası yeniden kurulum: kayıttaki sonucu animasyonsuz uygula
+  if(state.queue.length){
+    const e=state.queue[0];
+    if(e.t==='spin' && items[e.i] && items[e.i].label===e.l){ state.queue.shift(); state.history.push(e); return items[e.i]; }
+    state.queue=[];
+  }
   show('scr-wheel');
   $('#whoLabel').textContent=who||(state.current?state.current.name:'');
   $('#stepTitle').textContent=title; $('#stepSub').textContent=sub;
@@ -570,6 +590,8 @@ async function spin({who,title,sub='',items,tok}){
   audio();
   const item=await wheel.spin(state.fast?1300:4300);
   check(tok);
+  state.history.push({t:'spin',i:items.indexOf(item),l:item.label});
+  if(final){ state.gameOver=true; $('#backBtn').hidden=true; } // final sonucu geri alınamaz
   rb.innerHTML=esc(item.result||item.label); rb.className='result show';
   ding(); vibrate(40);
   btn.textContent='DEVAM ➜'; btn.disabled=false;
@@ -579,13 +601,14 @@ async function spin({who,title,sub='',items,tok}){
 }
 function showInfo(html,buttons=[{id:'ok',text:'Devam ➜',cls:'primary'}],tok){
   check(tok);
+  if(state.queue.length && state.queue[0].t==='info'){ const e=state.queue.shift(); state.history.push(e); return Promise.resolve(e.id); }
   $('#infoBody').innerHTML=html;
   const box=$('#infoBtns'); box.innerHTML='';
   show('scr-info');
   return new Promise((res,rej)=>{
     buttons.forEach(b=>{
       const el=document.createElement('button'); el.className='btn '+(b.cls||''); el.textContent=b.text;
-      el.onclick=()=>{ if(tok!==undefined && tok!==gameToken) return rej(new Abort()); res(b.id); };
+      el.onclick=()=>{ if(tok!==undefined && tok!==gameToken) return rej(new Abort()); state.history.push({t:'info',id:b.id}); res(b.id); };
       box.appendChild(el);
     });
   });
@@ -743,15 +766,27 @@ async function buildPlayer(p,tok){
 /* =========================================================
    GAME FLOWS
    ========================================================= */
-function resetGame(){
-  gameToken++; state.players=[]; state.usedFruits=new Set(); state.usedSwords=new Set(); state.current=null;
+function resetGame(queue=[]){
+  gameToken++; wheel.stop();
+  state.players=[]; state.usedFruits=new Set(); state.usedSwords=new Set(); state.current=null;
+  state.history=[]; state.queue=queue.slice(); state.gameOver=false;
   return gameToken;
+}
+// Son çarkı geri al: oyunu kayıttan son çark hariç yeniden kur
+function goBack(){
+  const active=document.querySelector('.screen.active').id;
+  if(active==='scr-single'||active==='scr-multi'){ goHome(); return; }
+  if(state.gameOver||!state.restart){ goHome(); return; }
+  const k=state.history.map(e=>e.t).lastIndexOf('spin');
+  if(k<0){ gameToken++; wheel.stop(); state.current=null; show(state.setupScreen); return; }
+  state.restart(state.history.slice(0,k));
 }
 function run(flow){ flow().catch(e=>{ if(!(e instanceof Abort)) { console.error(e); showInfo(`<h2 class="center">Bir şeyler ters gitti</h2><p class="sub">${esc(e.message)}</p>`,[{id:'home',text:'🏠 Ana Menü',cls:'primary'}]).then(goHome); } }); }
 
-async function runSingle(name,diff){
-  const tok=resetGame();
+async function runSingle(name,diff,queue){
+  const tok=resetGame(queue);
   state.replay=()=>run(()=>runSingle(name,diff));
+  state.restart=q=>run(()=>runSingle(name,diff,q)); state.setupScreen='scr-single';
   const p=newPlayer(name,0); state.players=[p];
   await showInfo(`<div class="big-emoji">⛵</div><h2 class="center">${esc(name)}, macera başlıyor!</h2><p class="sub">Rakip zorluğu: ${diff.emoji} ${diff.name}</p>`,[{id:'ok',text:'Karakterimi oluştur 🎡',cls:'primary'}],tok);
   await buildPlayer(p,tok);
@@ -770,9 +805,10 @@ async function runSingle(name,diff){
   await finalBattle([p,opp],tok);
 }
 
-async function runMulti(names){
-  const tok=resetGame();
+async function runMulti(names,queue){
+  const tok=resetGame(queue);
   state.replay=()=>run(()=>runMulti(names));
+  state.restart=q=>run(()=>runMulti(names,q)); state.setupScreen='scr-multi';
   state.players=names.map((n,i)=>newPlayer(n,i));
   for(let i=0;i<state.players.length;i++){
     const p=state.players[i];
@@ -787,7 +823,7 @@ async function runMulti(names){
 async function finalBattle(list,tok){
   const sum=list.reduce((a,x)=>a+totalOf(x),0);
   const pct=x=>Math.round(totalOf(x)/sum*1000)/10;
-  const winner=await spin({tok,who:'⚔️ FİNAL',title:'BÜYÜK SAVAŞ',
+  const winner=await spin({tok,final:true,who:'⚔️ FİNAL',title:'BÜYÜK SAVAŞ',
     sub:list.map(x=>`${x.name} %${pct(x)}`).join(' · '),
     items:list.map(x=>({label:x.name,result:`🏆 ${x.name} kazandı!`,weight:totalOf(x),value:x,color:x.color}))});
   fanfare(); vibrate([80,60,160]); confetti();
@@ -817,7 +853,8 @@ function confetti(){
 /* =========================================================
    SETUP SCREENS
    ========================================================= */
-function goHome(){ gameToken++; state.current=null; show('scr-home'); }
+function goHome(){ gameToken++; wheel.stop(); state.current=null; state.gameOver=false; show('scr-home'); }
+$('#backBtn').onclick=goBack;
 $('#homeBtn').onclick=()=>{
   const inGame=!$('#scr-home').classList.contains('active')&&!$('#scr-single').classList.contains('active')&&!$('#scr-multi').classList.contains('active');
   const hb=$('#homeBtn');
