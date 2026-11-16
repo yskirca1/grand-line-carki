@@ -286,6 +286,22 @@ const FRUIT_TYPES = [
   {id:'Logia', w:20, emoji:'🔥'},
   {id:'Mitolojik Zoan', w:10, emoji:'🐉'},
 ];
+// Meyvenin ne meyvesi olduğu
+const FRUIT_DESC = {
+  'Gura Gura':'Deprem','Ope Ope':'Ameliyat','Soru Soru':'Ruh','Zushi Zushi':'Yerçekimi','Ito Ito':'İp',
+  'Nikyu Nikyu':'Pati (İtme)','Jiki Jiki':'Manyetizma','Mochi Mochi':'Mochi','Doku Doku':'Zehir','Mero Mero':'Aşk (Taşlaştırma)',
+  'Shiro Shiro':'Kale','Kage Kage':'Gölge','Fuwa Fuwa':'Uçurma','Toshi Toshi':'Yaş','Bari Bari':'Bariyer',
+  'Hobi Hobi':'Oyuncak','Hana Hana':'Çiçek (Uzuv)','Horo Horo':'Hayalet','Doa Doa':'Kapı','Yomi Yomi':'Diriliş',
+  'Supa Supa':'Bıçak','Ori Ori':'Kafes','Nagi Nagi':'Sessizlik','Bisu Bisu':'Bisküvi','Bara Bara':'Parçalanma',
+  'Bomu Bomu':'Patlama','Mane Mane':'Taklit','Sube Sube':'Kayganlık','Kilo Kilo':'Ağırlık',
+  'Yami Yami':'Karanlık','Magu Magu':'Magma','Pika Pika':'Işık','Hie Hie':'Buz','Goro Goro':'Yıldırım','Mori Mori':'Orman',
+  'Mera Mera':'Ateş','Suna Suna':'Kum','Gasu Gasu':'Gaz','Moku Moku':'Duman','Yuki Yuki':'Kar','Numa Numa':'Bataklık',
+  'Ryu Ryu: Pteranodon':'Antik Zoan','Neko Neko: Leopar':'Leopar','Ryu Ryu: Allosaurus':'Antik Zoan',
+  'Ryu Ryu: Brachiosaurus':'Antik Zoan','Kumo Kumo: Rosamygale':'Antik Zoan','Ushi Ushi: Zürafa':'Zürafa',
+  'Inu Inu: Kurt':'Kurt','Zou Zou':'Fil','Tori Tori: Şahin':'Şahin','Hito Hito':'İnsan','Ushi Ushi: Bizon':'Bizon','Mogu Mogu':'Köstebek',
+  'Hito Hito: Nika':'Güneş Tanrısı Nika','Uo Uo: Seiryu':'Mavi Ejderha','Tori Tori: Anka':'Anka Kuşu','Hito Hito: Daibutsu':'Dev Buda',
+  'Inu Inu: Okuchi no Makami':'Kurt Tanrı','Hebi Hebi: Yamata no Orochi':'Sekiz Başlı Yılan','Inu Inu: Kyubi':'Dokuz Kuyruklu Tilki',
+};
 // [isim, tip, güç]
 const FRUITS = [
   ['Gura Gura','Paramecia',250],['Ope Ope','Paramecia',210],['Soru Soru','Paramecia',220],['Zushi Zushi','Paramecia',200],
@@ -306,7 +322,7 @@ const FRUITS = [
   ['Hito Hito: Nika','Mitolojik Zoan',260],['Uo Uo: Seiryu','Mitolojik Zoan',260],['Tori Tori: Anka','Mitolojik Zoan',230],
   ['Hito Hito: Daibutsu','Mitolojik Zoan',230],['Inu Inu: Okuchi no Makami','Mitolojik Zoan',220],
   ['Hebi Hebi: Yamata no Orochi','Mitolojik Zoan',170],['Inu Inu: Kyubi','Mitolojik Zoan',150],
-].map(([n,t,p])=>({n,t,p}));
+].map(([n,t,p])=>({n,t,p,d:FRUIT_DESC[n]||''}));
 
 const SWORD_GRADES = {
   'Saijo O Wazamono':{v:180, w:1},
@@ -324,11 +340,11 @@ const SWORDS = [
 ].map(([n,g])=>({n,g,v:SWORD_GRADES[g].v,w:SWORD_GRADES[g].w}));
 
 const HAKI = [
-  {label:'Haki yok', short:'❌ Yok', w:22, v:0},
-  {label:'👁️ Gözlem Hakisi', short:'👁️ Gözlem', w:20, v:40},
-  {label:'🛡️ Silahlanma Hakisi', short:'🛡️ Silahlanma', w:20, v:60},
-  {label:'👁️🛡️ Gözlem + Silahlanma', short:'👁️🛡️ İkisi', w:26, v:110},
-  {label:'👑 Fatih dahil üç Haki!', short:'👑 Üçü de', w:12, v:230},
+  {label:'Haki yok', short:'❌ Yok', w:30, v:0},
+  {label:'👁️ Gözlem Hakisi', short:'👁️ Gözlem', w:26, v:40},
+  {label:'🛡️ Silahlanma Hakisi', short:'🛡️ Silahlanma', w:22, v:60},
+  {label:'👁️🛡️ Gözlem + Silahlanma', short:'👁️🛡️ İkisi', w:16, v:110},
+  {label:'👑 Fatih dahil üç Haki!', short:'👑 Üçü de', w:6, v:230},
 ];
 
 // Her istatistik için 10 seviye (en kötüden en iyiye). Puan arka planda 1-10 olarak tutulur.
@@ -342,34 +358,39 @@ const STATS = [
 
 // Ustalık çarkları: m = çarpan
 const FRUIT_MASTERY = [
-  {label:'Yeni yemiş, kontrol edemiyor',short:'Kontrolsüz',w:15,m:0.6},
-  {label:'Acemi kullanıcı',short:'Acemi',w:25,m:0.8},
-  {label:'Alışmış',w:28,m:1.0},
-  {label:'Usta kullanıcı',short:'Usta',w:20,m:1.25},
-  {label:'Tam hakimiyet',short:'Tam Hakimiyet',w:12,m:1.5},
+  {label:'Yeni yemiş, kontrol edemiyor',short:'Kontrolsüz',w:24,m:0.6},
+  {label:'Acemi kullanıcı',short:'Acemi',w:30,m:0.8},
+  {label:'Alışmış',w:25,m:1.0},
+  {label:'Usta kullanıcı',short:'Usta',w:15,m:1.25},
+  {label:'Tam hakimiyet',short:'Tam Hakimiyet',w:6,m:1.5},
 ];
 const SWORD_MASTERY = [
-  {label:'Acemi — kılıcı ters tutuyor',short:'Acemi',w:15,m:0.5},
-  {label:'Çırak',w:25,m:0.8},
-  {label:'Kendo Ustası',w:25,m:1.0},
-  {label:'Usta Kılıççı',w:18,m:1.3},
-  {label:'Büyük Kılıç Ustası',short:'Büyük Usta',w:12,m:1.7},
-  {label:'Dünyanın En İyi Kılıççısı',short:'Dünyanın En İyisi',w:5,m:2.2},
+  {label:'Acemi — kılıcı ters tutuyor',short:'Acemi',w:25,m:0.5},
+  {label:'Çırak',w:28,m:0.8},
+  {label:'Kendo Ustası',w:22,m:1.0},
+  {label:'Usta Kılıççı',w:14,m:1.3},
+  {label:'Büyük Kılıç Ustası',short:'Büyük Usta',w:8,m:1.7},
+  {label:'Dünyanın En İyi Kılıççısı',short:'Dünyanın En İyisi',w:3,m:2.2},
 ];
 const HAKI_MASTERY = [
-  {label:'Zar zor kullanıyor',short:'Zayıf',w:25,m:0.6},
-  {label:'Orta seviye',short:'Orta',w:35,m:1.0},
-  {label:'Güçlü',w:28,m:1.4},
-  {label:'İleri seviye (Ryuo / gelecek görme)',short:'İleri Seviye',w:12,m:1.8},
+  {label:'Zar zor kullanıyor',short:'Zayıf',w:34,m:0.6},
+  {label:'Orta seviye',short:'Orta',w:36,m:1.0},
+  {label:'Güçlü',w:22,m:1.4},
+  {label:'İleri seviye (Ryuo / gelecek görme)',short:'İleri Seviye',w:8,m:1.8},
 ];
 // Unvan: taraf'a göre ödül / rütbe. v = güç bonusu
-const TITLE_VALUES = [{v:0,w:20},{v:20,w:25},{v:60,w:25},{v:120,w:15},{v:200,w:10},{v:300,w:5}];
+const TITLE_VALUES = [{v:0,w:30},{v:20,w:28},{v:60,w:22},{v:120,w:12},{v:200,w:6},{v:300,w:2}];
 const TITLES = {
   pirate:{q:'Ödülün ne kadar?', l:['Ödül yok','10 Milyon ฿','100 Milyon ฿','500 Milyon ฿','1 Milyar ฿','3 Milyar ฿ (Yonko)']},
   marine:{q:'Rütben ne?',       l:['Er','Teğmen','Albay','Tuğamiral','Koramiral','Amiral']},
   rev:   {q:'Ordudaki yerin?',  l:['Acemi üye','Ajan','Hücre Lideri','Komutan','Kurmay Başkanı','Lider']},
   gov:   {q:'Birimin hangisi?', l:['Memur','CP1 Ajanı','CP5 Ajanı','CP9 Ajanı','CP0 Ajanı','Beş Yaşlı\'nın Sağ Kolu']},
 };
+
+// 1-10 istatistik seviyeleri: güçlüye doğru giderek nadir
+const STAT_WEIGHTS = [10,13,15,16,15,12,9,6,3,1];
+// Güç arttıkça dilim küçülür (max: en güçlüden biraz büyük tavan değer)
+const rarity=(p,max)=>Math.max(5,max-p);
 
 const DIFFS = [
   {id:'easy',   name:'Kolay',    emoji:'🟢', min:0,   max:299,  desc:'East Blue kötüleri'},
@@ -437,13 +458,25 @@ class Wheel{
       ctx.fillStyle=s.color; ctx.fill();
       if(n<=70){ ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.lineWidth=1; ctx.stroke(); }
       const span=s.end-s.start, fs=Math.min(16, span*r*0.55, r*0.1);
-      if(fs>=7){
+      // İki satırlık etiket (ad + alt yazı) dilim yeterince genişse
+      const fs2=Math.min(15, span*r*0.8/2.2);
+      const two=s.item.sub && fs2>=8;
+      const drawLine=(txt,size,weight,y,color)=>{
+        ctx.font=`${weight} ${size}px system-ui,-apple-system,sans-serif`;
+        const t=fitText(ctx,txt,r*0.66);
+        ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.6)'; ctx.strokeText(t,r-10,y);
+        ctx.fillStyle=color; ctx.fillText(t,r-10,y);
+      };
+      if(two||fs>=7){
         ctx.save(); ctx.rotate((s.start+s.end)/2);
         ctx.textAlign='right'; ctx.textBaseline='middle';
-        ctx.font=`800 ${fs}px system-ui,-apple-system,sans-serif`;
-        const label=fitText(ctx, s.item.short||s.item.label, r*0.66);
-        ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.6)'; ctx.strokeText(label,r-10,0);
-        ctx.fillStyle='#fff'; ctx.fillText(label,r-10,0); ctx.restore();
+        if(two){
+          drawLine(s.item.short||s.item.label,fs2,800,-fs2*0.55,'#fff');
+          drawLine(s.item.sub,fs2*0.82,700,fs2*0.6,'#ffe89a');
+        }else{
+          drawLine(s.item.short||s.item.label,fs,800,0,'#fff');
+        }
+        ctx.restore();
       }
     }
     ctx.restore();
@@ -555,7 +588,7 @@ function powerOf(p){
   return {stat,fruit,sword,haki,title,crew,total:stat+fruit+sword+haki+title+crew};
 }
 const totalOf=x=>x.isNpc?x.total:powerOf(x).total;
-const npcTotal=c=>Math.round(c.p*1.5+200);
+const npcTotal=c=>Math.round(c.p*1.3+150);
 
 function newPlayer(name,i){
   return {name,color:PLAYER_COLORS[i%PLAYER_COLORS.length],faction:null,title:null,fruits:[],swords:[],haki:null,mastery:{},stats:{},crew:null};
@@ -563,7 +596,7 @@ function newPlayer(name,i){
 
 function cardHTML(p){
   const pw=powerOf(p);
-  const fruits=p.fruits.length?p.fruits.map(f=>`<div class="item"><span>🍎 ${esc(f.n)} no Mi <span class="badge ${f.awakened?'aw':'na'}">${f.awakened?'UYANMIŞ':'uyanmamış'}</span></span><em>${esc(f.t)} · ${Math.round(f.p*(f.awakened?1.6:1))}</em></div>`).join(''):`<div class="empty">${p.faction?'Meyve yok — denizde yüzebilirsin 🏊':'—'}</div>`;
+  const fruits=p.fruits.length?p.fruits.map(f=>`<div class="item"><span>🍎 ${esc(f.n)} no Mi <small style="color:var(--gold2)">(${esc(f.d)})</small> <span class="badge ${f.awakened?'aw':'na'}">${f.awakened?'UYANMIŞ':'uyanmamış'}</span></span><em>${esc(f.t)} · ${Math.round(f.p*(f.awakened?1.6:1))}</em></div>`).join(''):`<div class="empty">${p.faction?'Meyve yok — denizde yüzebilirsin 🏊':'—'}</div>`;
   const swords=p.swords.length?p.swords.map(s=>`<div class="item"><span>🗡️ ${esc(s.n)}</span><em>${esc(s.g)} · ${s.v}</em></div>`).join(''):`<div class="empty">—</div>`;
   const stats=STATS.map(s=>{ const v=p.stats[s.id]; return `<div class="stat"><span>${s.name}</span><div class="bar"><i style="width:${(v||0)*10}%;background:hsl(${((v||1)-1)*13},75%,50%)"></i></div><b>${v?s.lv[v-1]:'–'}</b></div>`; }).join('');
   const ms=p.mastery||{};
@@ -608,15 +641,15 @@ async function buildPlayer(p,tok){
   const eats=await spin({tok,title:'Şeytan meyvesi yedin mi?',items:yesNo('🍎 Evet',55,'🌊 Hayır',45)});
   if(eats.value){
     const cnt=await spin({tok,title:'Kaç meyve?',sub:'Karasakal gibi birden fazla olabilir!',items:[
-      {label:'1 meyve',weight:72,value:1},{label:'2 meyve',weight:22,value:2},{label:'3 meyve',weight:6,value:3}]});
+      {label:'1 meyve',weight:82,value:1},{label:'2 meyve',weight:15,value:2},{label:'3 meyve',weight:3,value:3}]});
     for(let i=0;i<cnt.value;i++){
       const tag=cnt.value>1?` (${i+1}/${cnt.value})`:'';
       const type=await spin({tok,title:'Meyve türü'+tag,items:FRUIT_TYPES.map(t=>({label:`${t.emoji} ${t.id}`,weight:t.w,value:t.id}))});
       let pool=FRUITS.filter(fr=>fr.t===type.value && !state.usedFruits.has(fr.n));
       if(!pool.length) pool=FRUITS.filter(fr=>!state.usedFruits.has(fr.n));
-      const fr=await spin({tok,title:'Hangi meyve?'+tag,sub:`${type.value} · güç değerleri parantezde`,items:pool.map(x=>({label:`${x.n} (${x.p})`,short:x.n,result:`${x.n} no Mi! (${x.p})`,value:x}))});
+      const fr=await spin({tok,title:'Hangi meyve?'+tag,sub:type.value,items:pool.map(x=>({label:`${x.n} (${x.d})`,short:x.n,weight:rarity(x.p,300),sub:x.d,result:`${x.n} no Mi — ${x.d}! (güç ${x.p})`,value:x}))});
       state.usedFruits.add(fr.value.n);
-      const aw=await spin({tok,title:'Meyve uyanmış mı?',sub:`${fr.value.n} · uyanış gücü ×1.6`,items:yesNo('✨ Uyanmış',30,'💤 Uyanmamış',70)});
+      const aw=await spin({tok,title:'Meyve uyanmış mı?',sub:`${fr.value.n} · uyanış gücü ×1.6`,items:yesNo('✨ Uyanmış',20,'💤 Uyanmamış',80)});
       p.fruits.push({...fr.value,awakened:aw.value});
     }
     const fm=await spin({tok,title:'Meyvene ne kadar hakimsin?',sub:'Meyve gücünü çarpar',items:FRUIT_MASTERY.map(x=>({label:x.label,short:x.short,weight:x.w,result:`${x.label} (×${x.m})`,value:x}))});
@@ -627,7 +660,7 @@ async function buildPlayer(p,tok){
   const sw=await spin({tok,title:'Kılıç kullanıyor musun?',items:yesNo('🗡️ Evet',45,'✋ Hayır',55)});
   if(sw.value){
     const cnt=await spin({tok,title:'Kaç kılıç?',sub:'Üç kılıç = Santoryu!',items:[
-      {label:'1 kılıç',weight:50,value:1},{label:'2 kılıç',weight:30,value:2},{label:'3 kılıç (Santoryu)',short:'3 · Santoryu',weight:20,value:3}]});
+      {label:'1 kılıç',weight:55,value:1},{label:'2 kılıç',weight:32,value:2},{label:'3 kılıç (Santoryu)',short:'3 · Santoryu',weight:13,value:3}]});
     for(let i=0;i<cnt.value;i++){
       const pool=SWORDS.filter(s=>s.g==='Derecesiz'||!state.usedSwords.has(s.n));
       const s=await spin({tok,title:`Kılıç ${i+1}/${cnt.value}`,sub:'Nadir kılıçların dilimi daha küçük',items:pool.map(x=>({label:x.n,weight:x.w,result:`${x.n} — ${x.g} (${x.v})`,value:x}))});
@@ -648,7 +681,7 @@ async function buildPlayer(p,tok){
 
   // 5) İstatistikler
   for(const st of STATS){
-    const nums=st.lv.map((txt,i)=>({label:txt,value:i+1,color:`hsl(${i*13},70%,42%)`,result:`${st.name}: ${txt}`}));
+    const nums=st.lv.map((txt,i)=>({label:txt,value:i+1,weight:STAT_WEIGHTS[i],color:`hsl(${i*13},70%,42%)`,result:`${st.name}: ${txt}`}));
     const r=await spin({tok,title:st.name,sub:`${st.lv[0]} → ${st.lv[9]}`,items:nums});
     p.stats[st.id]=r.value;
   }
@@ -666,7 +699,7 @@ async function buildPlayer(p,tok){
     p.crew={name:`${p.name} ${p.faction.crewWord}`,kind:'own',members:[]};
     for(let i=0;i<size.value;i++){
       const pool=CHARACTERS.filter(c=>!p.crew.members.includes(c));
-      const m=await spin({tok,title:`Tayfa üyesi ${i+1}/${size.value}`,sub:`${pool.length} karakterlik dev çark!`,items:pool.map(c=>({label:c.n,result:`${c.n} katıldı! (${c.p})`,value:c}))});
+      const m=await spin({tok,title:`Tayfa üyesi ${i+1}/${size.value}`,sub:`${pool.length} karakterlik dev çark!`,items:pool.map(c=>({label:c.n,weight:rarity(c.p,1100),result:`${c.n} katıldı! (${c.p})`,value:c}))});
       p.crew.members.push(m.value);
     }
   }
@@ -696,7 +729,7 @@ async function runSingle(name,diff){
     <div class="pcard" style="border-color:#888">
       <div class="head"><div><div class="name">${esc(opp.name)}</div><div class="fac">${diff.name} rakip · karakter gücü ${o.value.p}</div></div>
       <div class="power"><b>${opp.total}</b><span>TOPLAM GÜÇ</span></div></div>
-      <div class="breakdown"><span>Karakter gücü × 1.5</span><b>${Math.round(o.value.p*1.5)}</b><span>Tecrübe bonusu</span><b>200</b></div>
+      <div class="breakdown"><span>Karakter gücü × 1.3</span><b>${Math.round(o.value.p*1.3)}</b><span>Tecrübe bonusu</span><b>150</b></div>
     </div>
     <div class="pcard" style="border-color:${p.color}"><div class="head"><div class="name">${esc(p.name)}</div><div class="power"><b>${totalOf(p)}</b><span>TOPLAM GÜÇ</span></div></div></div>`,
     [{id:'ok',text:'SAVAŞ! ⚔️',cls:'red'}],tok);
