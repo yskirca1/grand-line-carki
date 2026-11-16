@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<title>Grand Line Çarkı</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0b1d33">
+<meta name="description" content="Şeytan meyveni, kılıcını, Hakini ve tayfanı çarkla belirle, sonra savaş!">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏴‍☠️</text></svg>">
+<style>
+:root{
+  color-scheme:dark;
+  --bg1:#071526; --bg2:#0f3057; --card:#132a45; --card2:#1b3a5e;
+  --gold:#f4c430; --gold2:#ffdd6b; --red:#e63946; --text:#f1f5fb; --muted:#9fb3cc;
+  --green:#2ecc71;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color:var(--text);
+  background-color:var(--bg1);
+  background:radial-gradient(ellipse at top,var(--bg2),var(--bg1) 70%) fixed;
+  min-height:100vh; touch-action:manipulation;
+}
+#app{max-width:520px;margin:0 auto;padding-block:0 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.icon-btn.warn{border-color:var(--red);background:#4a1018}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 0}
+.logo{font-weight:800;letter-spacing:.5px;color:var(--gold)}
+.icon-btn{background:var(--card);border:1px solid #2a4a70;color:var(--text);border-radius:10px;padding:6px 10px;font-size:18px}
+.screen{display:none;animation:fade .25s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:34px;margin:18px 0 4px;text-align:center;color:var(--gold);text-shadow:0 3px 0 #7a4b00}
+h2{margin:6px 0;font-size:22px}
+.sub{color:var(--muted);text-align:center;margin:0 0 20px}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:16px;font-size:18px;font-weight:800;
+  color:var(--text);background:var(--card2);margin:10px 0;cursor:pointer;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(180deg,var(--gold2),var(--gold));color:#3a2200;box-shadow:0 4px 0 #9a6b00}
+.btn.red{background:linear-gradient(180deg,#ff5b67,var(--red));box-shadow:0 4px 0 #8c1520}
+.btn.ghost{background:transparent;border:1px solid #2a4a70;font-weight:600;font-size:15px;padding:12px}
+.btn:disabled{opacity:.45}
+.panel{background:var(--card);border:1px solid #23446b;border-radius:16px;padding:14px;margin:12px 0}
+label.lbl{display:block;color:var(--muted);font-size:14px;margin:8px 0 6px}
+input[type=text]{width:100%;padding:12px;border-radius:10px;border:1px solid #2a4a70;background:#0c2038;color:var(--text);font-size:16px;margin-bottom:8px}
+.chips{display:grid;grid-template-columns:1fr;gap:8px}
+.chip{border:2px solid #2a4a70;background:#0c2038;border-radius:12px;padding:12px;text-align:left;color:var(--text);font-size:16px;cursor:pointer}
+.chip small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.chip.sel{border-color:var(--gold);background:#2b2a17}
+.row{display:flex;gap:8px;align-items:center}
+.count-btns{display:flex;gap:8px}
+.count-btns button{flex:1;padding:12px 0;font-size:18px;font-weight:800;border-radius:10px;border:2px solid #2a4a70;background:#0c2038;color:var(--text)}
+.count-btns button.sel{border-color:var(--gold);color:var(--gold)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.toggle input{width:22px;height:22px;accent-color:var(--gold)}
+
+/* wheel screen */
+.step-head{text-align:center;margin-top:4px}
+.who{display:inline-block;background:var(--card2);border-radius:20px;padding:4px 12px;font-size:13px;color:var(--gold)}
+.step-head p{color:var(--muted);margin:2px 0 0;font-size:14px;min-height:18px}
+.wheel-wrap{position:relative;width:min(100%,400px);margin:14px auto 6px;aspect-ratio:1}
+.wheel-wrap canvas{width:100%;height:100%;display:block;border-radius:50%;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;
+  border-left:16px solid transparent;border-right:16px solid transparent;border-top:30px solid var(--gold);
+  filter:drop-shadow(0 3px 2px rgba(0,0,0,.6));z-index:2}
+.hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:22%;aspect-ratio:1;border-radius:50%;
+  border:4px solid #3b2410;background:radial-gradient(circle at 35% 30%,#fff3c4,var(--gold) 60%,#a87400);
+  font-weight:900;color:#3a2200;font-size:clamp(11px,3.4vw,15px);cursor:pointer;z-index:2}
+.hub:disabled{cursor:default}
+.result{min-height:56px;text-align:center;font-size:22px;font-weight:800;padding:8px;border-radius:12px;margin:6px 0}
+.result.show{background:rgba(244,196,48,.12);border:1px solid rgba(244,196,48,.5);animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.8);opacity:0}70%{transform:scale(1.06)}100%{transform:none;opacity:1}}
+details.peek{background:var(--card);border-radius:12px;padding:10px 12px;margin-top:10px}
+details.peek summary{cursor:pointer;color:var(--muted);font-weight:600}
+
+/* cards */
+.pcard{background:linear-gradient(180deg,#1b3a5e,#122a45);border:2px solid var(--gold);border-radius:18px;padding:14px;margin:8px 0}
+.pcard .head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.pcard .name{font-size:22px;font-weight:900}
+.pcard .fac{color:var(--muted);font-size:14px}
+.power{text-align:right}
+.power b{display:block;font-size:28px;color:var(--gold)}
+.power span{font-size:11px;color:var(--muted);letter-spacing:1px}
+.sec{margin-top:10px}
+.sec h4{margin:0 0 4px;font-size:13px;color:var(--gold);letter-spacing:.5px;text-transform:uppercase}
+.item{background:rgba(0,0,0,.2);border-radius:8px;padding:6px 8px;margin:4px 0;font-size:14px;display:flex;justify-content:space-between;gap:8px}
+.item em{color:var(--muted);font-style:normal;font-size:12px;white-space:nowrap}
+.badge{display:inline-block;font-size:11px;padding:1px 6px;border-radius:6px;margin-left:4px;font-weight:800}
+.badge.aw{background:#7b2cbf;color:#fff}
+.badge.na{background:#334;color:#aab}
+.stat b{font-size:12px;text-align:right;white-space:nowrap}
+.mastery{font-size:12px;color:var(--gold2);margin:2px 0 0 4px}
+.icon-btn.on{border-color:var(--gold);background:#3a3110}
+.stat{display:grid;grid-template-columns:112px 1fr 96px;align-items:center;gap:6px;font-size:14px;margin:3px 0}
+.bar{height:10px;background:rgba(0,0,0,.35);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:6px}
+.crew{display:flex;flex-wrap:wrap;gap:5px}
+.crew span{background:rgba(0,0,0,.25);border-radius:8px;padding:3px 7px;font-size:13px}
+.breakdown{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:13px;color:var(--muted);margin-top:6px}
+.breakdown b{color:var(--text)}
+.empty{color:var(--muted);font-size:13px}
+.center{text-align:center}
+.big-emoji{font-size:64px;text-align:center;margin:10px 0}
+.rank{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:10px;background:var(--card);margin:6px 0}
+.rank.win{background:linear-gradient(90deg,#5a4300,#2b2a17);border:1px solid var(--gold)}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;vertical-align:middle}
+.note{font-size:12px;color:var(--muted);text-align:center;margin-top:16px}
+.confetti{position:fixed;top:-20px;font-size:22px;pointer-events:none;animation:fall linear forwards;z-index:50}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <span class="logo">🏴‍☠️ Grand Line Çarkı</span>
+    <div class="row">
+      <button class="icon-btn" id="fastBtn" title="Hızlı mod">⚡</button>
+      <button class="icon-btn" id="homeBtn" title="Ana menü">🏠</button>
+      <button class="icon-btn" id="soundBtn" title="Ses">🔊</button>
+    </div>
+  </div>
+
+  <!-- HOME -->
+  <section id="scr-home" class="screen active">
+    <h1>GRAND LINE<br>ÇARKI</h1>
+    <p class="sub">Meyveni, kılıcını, hakini ve tayfanı çark belirlesin!</p>
+    <button class="btn primary" id="goSingle">⚔️ Tek Oyunculu</button>
+    <button class="btn red" id="goMulti">👥 Çok Oyunculu</button>
+    <div class="panel toggle">
+      <div><b>⚡ Hızlı mod</b><div class="empty">Çarklar kendiliğinden ve hızlı döner</div></div>
+      <input type="checkbox" id="fastToggle">
+    </div>
+    <div class="panel" style="font-size:14px;color:var(--muted);line-height:1.5">
+      <b style="color:var(--text)">Nasıl oynanır?</b><br>
+      Taraf → Ödül/Rütbe → Şeytan meyvesi (kaç tane, hangisi, uyanmış mı, ne kadar hakimsin) →
+      Kılıç (kaç tane, hangisi, ustalık) → Haki (tür ve seviye) → İstatistikler → Tayfa.
+      Oyun sırasında ⚡ düğmesiyle hızlı modu açıp kapatabilirsin.
+      Her şey çarkla belirlenir. Sonunda toplam güçlere göre oranlanmış <b>Büyük Savaş</b> çarkı kazananı seçer.
+    </div>
+  </section>
+
+  <!-- SINGLE SETUP -->
+  <section id="scr-single" class="screen">
+    <h2>⚔️ Tek Oyunculu</h2>
+    <label class="lbl">Adın</label>
+    <input type="text" id="singleName" maxlength="18" placeholder="Kaptan">
+    <label class="lbl">Zorluk (rakip bu kademeden rastgele gelir)</label>
+    <div class="chips" id="diffChips"></div>
+    <button class="btn primary" id="startSingle">Yelken Aç! ⛵</button>
+  </section>
+
+  <!-- MULTI SETUP -->
+  <section id="scr-multi" class="screen">
+    <h2>👥 Çok Oyunculu</h2>
+    <label class="lbl">Oyuncu sayısı</label>
+    <div class="count-btns" id="countBtns"></div>
+    <label class="lbl">İsimler</label>
+    <div id="nameInputs"></div>
+    <button class="btn primary" id="startMulti">Yelken Aç! ⛵</button>
+  </section>
+
+  <!-- WHEEL -->
+  <section id="scr-wheel" class="screen">
+    <div class="step-head">
+      <span class="who" id="whoLabel"></span>
+      <h2 id="stepTitle"></h2>
+      <p id="stepSub"></p>
+    </div>
+    <div class="wheel-wrap">
+      <div class="pointer"></div>
+      <canvas id="wheel"></canvas>
+      <button class="hub" id="hub">ÇEVİR</button>
+    </div>
+    <div class="result" id="resultBox"></div>
+    <button class="btn primary" id="actionBtn">ÇEVİR</button>
+    <details class="peek" id="peek"><summary>📜 Karakter kartı</summary><div id="miniCard"></div></details>
+  </section>
+
+  <!-- INFO / CARD / RESULT -->
+  <section id="scr-info" class="screen">
+    <div id="infoBody"></div>
+    <div id="infoBtns"></div>
+  </section>
+</div>
+
+<script>
+'use strict';
+/* =========================================================
+   DATA
+   ========================================================= */
+const FACTIONS = [
+  {id:'pirate', name:'Korsan',              emoji:'🏴‍☠️', w:45, crewWord:'Korsanları'},
+  {id:'marine', name:'Denizci',             emoji:'⚓',  w:30, crewWord:'Birliği'},
+  {id:'rev',    name:'Devrimci',            emoji:'✊',  w:15, crewWord:'Hücresi'},
+  {id:'gov',    name:'Dünya Hükümeti',      emoji:'🕶️', w:10, crewWord:'Ekibi'},
+];
+
+// [isim, güç]
+const CHAR_RAW = [
+  // Hasır Şapka
+  ['Monkey D. Luffy',950],['Roronoa Zoro',880],['Vinsmoke Sanji',840],['Nami',300],['Usopp',330],
+  ['Tony Tony Chopper',360],['Nico Robin',420],['Franky',450],['Brook',470],['Jinbe',720],
+  // Kızıl Saç
+  ['Shanks',990],['Benn Beckman',830],['Lucky Roux',700],['Yasopp',700],['Rockstar',260],
+  // Beyazsakal
+  ['Edward Newgate',990],['Marco',860],['Portgas D. Ace',760],['Jozu',700],['Vista',700],['Izo',560],
+  // Canavarlar
+  ['Kaido',1000],['King',840],['Queen',820],['Jack',700],["Who's-Who",580],['Page One',400],['Ulti',420],['Yamato',870],
+  // Big Mom
+  ['Big Mom',985],['Charlotte Katakuri',870],['Charlotte Smoothie',720],['Charlotte Cracker',700],
+  ['Charlotte Perospero',650],['Charlotte Oven',640],['Charlotte Pudding',200],['Charlotte Brulee',230],
+  // Karasakal
+  ['Karasakal (Teach)',980],['Kuzan (Aokiji)',930],['Shiryu',780],['Van Augur',660],['Jesus Burgess',680],
+  ['Lafitte',650],['Doc Q',550],['Catarina Devon',620],
+  // Heart
+  ['Trafalgar Law',860],['Bepo',380],['Jean Bart',400],['Penguin',250],['Shachi',250],
+  // Kid
+  ['Eustass Kid',860],['Killer',760],['Heat',380],['Wire',380],
+  // Roger
+  ['Gol D. Roger',1000],['Silvers Rayleigh',930],['Scopper Gaban',880],['Kozuki Oden',940],['Crocus',400],
+  // Cross Guild & Yedi Savaşçı
+  ['Buggy',300],['Dracule Mihawk',960],['Crocodile',780],['Daz Bonez (Mr. 1)',500],['Galdino (Mr. 3)',300],
+  ['Bartholomew Kuma',800],['Gecko Moria',650],['Edward Weevil',720],
+  // Donquixote
+  ['Donquixote Doflamingo',840],['Trebol',600],['Diamante',620],['Pica',600],['Vergo',600],['Sugar',300],
+  // Kuja
+  ['Boa Hancock',860],['Boa Marigold',450],['Boa Sandersonia',450],
+  // Arlong
+  ['Arlong',180],['Hatchan',150],['Kuroobi',140],['Chew',140],
+  // Diğer korsanlar
+  ['Kaptan Kuro',150],['Don Krieg',140],['Alvida',60],['Wapol',120],['Foxy',150],['Bellamy',300],
+  ['Bartolomeo',460],['Cavendish',600],['Basil Hawkins',640],['Scratchmen Apoo',600],['Urouge',640],
+  ['Capone Bege',640],['Jewelry Bonney',700],['Enel',700],['Hody Jones',300],['Bon Clay',300],
+  ['Shiki',900],['Rocks D. Xebec',1000],['Caesar Clown',450],
+  // Denizciler
+  ['Sengoku',940],['Monkey D. Garp',970],['Akainu',950],['Kizaru',940],['Fujitora',930],['Ryokugyu',920],
+  ['Tsuru',700],['Momonga',600],['Onigumo',600],['Koby',600],['Helmeppo',350],['Smoker',600],
+  ['Tashigi',400],['Hina',450],['X Drake',650],['Baltalı Morgan',50],['Magellan',720],
+  // Devrimciler
+  ['Monkey D. Dragon',980],['Sabo',860],['Emporio Ivankov',650],['Koala',400],['Inazuma',450],['Hack',450],
+  ['Belo Betty',550],['Morley',550],['Karasu',520],['Lindbergh',520],
+  // CP
+  ['Rob Lucci',800],['Kaku',700],['Jabra',450],['Kalifa',400],['Blueno',420],['Spandam',40],['Stussy',650],
+  // Wano & diğer
+  ['Kinemon',600],['Denjiro',620],['Kawamatsu',580],['Ashura Doji',600],['Kiku',560],['Kozuki Momonosuke',500],
+  ['Kyros',650],['Rebecca',300],
+];
+const CHARACTERS = CHAR_RAW.map(([n,p])=>({n,p}));
+const CHAR_BY_NAME = Object.fromEntries(CHARACTERS.map(c=>[c.n,c]));
+
+const CREWS = [
+  {f:'pirate', name:'Hasır Şapka Korsanları', m:['Monkey D. Luffy','Roronoa Zoro','Vinsmoke Sanji','Nami','Usopp','Tony Tony Chopper','Nico Robin','Franky','Brook','Jinbe']},
+  {f:'pirate', name:'Kızıl Saç Korsanları', m:['Shanks','Benn Beckman','Lucky Roux','Yasopp','Rockstar']},
+  {f:'pirate', name:'Beyazsakal Korsanları', m:['Edward Newgate','Marco','Portgas D. Ace','Jozu','Vista','Izo']},
+  {f:'pirate', name:'Canavarlar Korsanları', m:['Kaido','King','Queen','Jack',"Who's-Who",'Page One','Ulti']},
+  {f:'pirate', name:'Big Mom Korsanları', m:['Big Mom','Charlotte Katakuri','Charlotte Smoothie','Charlotte Cracker','Charlotte Perospero','Charlotte Oven','Charlotte Pudding','Charlotte Brulee']},
+  {f:'pirate', name:'Karasakal Korsanları', m:['Karasakal (Teach)','Kuzan (Aokiji)','Shiryu','Van Augur','Jesus Burgess','Lafitte','Doc Q','Catarina Devon']},
+  {f:'pirate', name:'Heart Korsanları', m:['Trafalgar Law','Bepo','Jean Bart','Penguin','Shachi']},
+  {f:'pirate', name:'Kid Korsanları', m:['Eustass Kid','Killer','Heat','Wire']},
+  {f:'pirate', name:'Roger Korsanları', m:['Gol D. Roger','Silvers Rayleigh','Scopper Gaban','Kozuki Oden','Crocus']},
+  {f:'pirate', name:'Rocks Korsanları', m:['Rocks D. Xebec','Edward Newgate','Big Mom','Kaido','Shiki']},
+  {f:'pirate', name:'Cross Guild', m:['Buggy','Dracule Mihawk','Crocodile','Daz Bonez (Mr. 1)','Galdino (Mr. 3)']},
+  {f:'pirate', name:'Donquixote Ailesi', m:['Donquixote Doflamingo','Trebol','Diamante','Pica','Vergo','Sugar']},
+  {f:'pirate', name:'Kuja Korsanları', m:['Boa Hancock','Boa Marigold','Boa Sandersonia']},
+  {f:'pirate', name:'Arlong Korsanları', m:['Arlong','Hatchan','Kuroobi','Chew']},
+  {f:'pirate', name:'Hasır Şapka Büyük Filosu', m:['Bartolomeo','Cavendish','Kyros','Rebecca']},
+  {f:'marine', name:'Deniz Kuvvetleri Karargâhı', m:['Sengoku','Akainu','Kizaru','Fujitora','Ryokugyu','Tsuru']},
+  {f:'marine', name:"Garp'ın Birliği", m:['Monkey D. Garp','Koby','Helmeppo']},
+  {f:'marine', name:'SWORD', m:['Koby','X Drake','Helmeppo','Momonga']},
+  {f:'marine', name:'G-5 Birliği', m:['Smoker','Tashigi','Hina','Onigumo']},
+  {f:'rev', name:'Devrimci Ordu', m:['Monkey D. Dragon','Sabo','Emporio Ivankov','Koala','Inazuma','Hack']},
+  {f:'rev', name:'Devrimci Ordu Komutanları', m:['Sabo','Belo Betty','Morley','Karasu','Lindbergh']},
+  {f:'gov', name:'CP9', m:['Rob Lucci','Kaku','Jabra','Kalifa','Blueno','Spandam']},
+  {f:'gov', name:'CP0', m:['Rob Lucci','Kaku','Stussy']},
+  {f:'gov', name:'Yedi Deniz Savaşçısı', m:['Dracule Mihawk','Crocodile','Donquixote Doflamingo','Boa Hancock','Bartholomew Kuma','Gecko Moria','Jinbe']},
+  {f:'gov', name:'Impel Down', m:['Magellan']},
+];
+
+const FRUIT_TYPES = [
+  {id:'Paramecia', w:45, emoji:'🌀'},
+  {id:'Zoan', w:25, emoji:'🐾'},
+  {id:'Logia', w:20, emoji:'🔥'},
+  {id:'Mitolojik Zoan', w:10, emoji:'🐉'},
+];
+// [isim, tip, güç]
+const FRUITS = [
+  ['Gura Gura','Paramecia',250],['Ope Ope','Paramecia',210],['Soru Soru','Paramecia',220],['Zushi Zushi','Paramecia',200],
+  ['Ito Ito','Paramecia',180],['Nikyu Nikyu','Paramecia',180],['Jiki Jiki','Paramecia',180],['Mochi Mochi','Paramecia',170],
+  ['Doku Doku','Paramecia',160],['Mero Mero','Paramecia',160],['Shiro Shiro','Paramecia',150],['Kage Kage','Paramecia',140],
+  ['Fuwa Fuwa','Paramecia',140],['Toshi Toshi','Paramecia',130],['Bari Bari','Paramecia',120],['Hobi Hobi','Paramecia',120],
+  ['Hana Hana','Paramecia',110],['Horo Horo','Paramecia',110],['Doa Doa','Paramecia',100],['Yomi Yomi','Paramecia',90],
+  ['Supa Supa','Paramecia',90],['Ori Ori','Paramecia',90],['Nagi Nagi','Paramecia',80],['Bisu Bisu','Paramecia',80],
+  ['Bara Bara','Paramecia',70],['Bomu Bomu','Paramecia',70],['Mane Mane','Paramecia',60],['Sube Sube','Paramecia',50],
+  ['Kilo Kilo','Paramecia',50],
+  ['Yami Yami','Logia',240],['Magu Magu','Logia',230],['Pika Pika','Logia',220],['Hie Hie','Logia',210],
+  ['Goro Goro','Logia',210],['Mori Mori','Logia',200],['Mera Mera','Logia',190],['Suna Suna','Logia',180],
+  ['Gasu Gasu','Logia',170],['Moku Moku','Logia',150],['Yuki Yuki','Logia',140],['Numa Numa','Logia',130],
+  ['Ryu Ryu: Pteranodon','Zoan',170],['Neko Neko: Leopar','Zoan',160],['Ryu Ryu: Allosaurus','Zoan',160],
+  ['Ryu Ryu: Brachiosaurus','Zoan',150],['Kumo Kumo: Rosamygale','Zoan',150],['Ushi Ushi: Zürafa','Zoan',120],
+  ['Inu Inu: Kurt','Zoan',120],['Zou Zou','Zoan',100],['Tori Tori: Şahin','Zoan',100],['Hito Hito','Zoan',80],
+  ['Ushi Ushi: Bizon','Zoan',80],['Mogu Mogu','Zoan',80],
+  ['Hito Hito: Nika','Mitolojik Zoan',260],['Uo Uo: Seiryu','Mitolojik Zoan',260],['Tori Tori: Anka','Mitolojik Zoan',230],
+  ['Hito Hito: Daibutsu','Mitolojik Zoan',230],['Inu Inu: Okuchi no Makami','Mitolojik Zoan',220],
+  ['Hebi Hebi: Yamata no Orochi','Mitolojik Zoan',170],['Inu Inu: Kyubi','Mitolojik Zoan',150],
+].map(([n,t,p])=>({n,t,p}));
+
+const SWORD_GRADES = {
+  'Saijo O Wazamono':{v:180, w:1},
+  'O Wazamono':{v:120, w:2},
+  'Ryo Wazamono':{v:80, w:3},
+  'Wazamono':{v:50, w:3},
+  'Derecesiz':{v:25, w:8},
+};
+const SWORDS = [
+  ['Yoru','Saijo O Wazamono'],['Murakumogiri','Saijo O Wazamono'],['Ame no Habakiri','Saijo O Wazamono'],['Shodai Kitetsu','Saijo O Wazamono'],
+  ['Enma','O Wazamono'],['Wado Ichimonji','O Wazamono'],['Shusui','O Wazamono'],['Nidai Kitetsu','O Wazamono'],['Kikoku','O Wazamono'],['Gryphon','O Wazamono'],
+  ['Soul Solid','Ryo Wazamono'],['Yubashiri','Ryo Wazamono'],['Kashu','Ryo Wazamono'],['Durandal','Ryo Wazamono'],
+  ['Sandai Kitetsu','Wazamono'],['Shigure','Wazamono'],['Nanashaku Jitte','Wazamono'],
+  ['Sıradan Kılıç','Derecesiz'],
+].map(([n,g])=>({n,g,v:SWORD_GRADES[g].v,w:SWORD_GRADES[g].w}));
+
+const HAKI = [
+  {label:'Haki yok', short:'❌ Yok', w:22, v:0},
+  {label:'👁️ Gözlem Hakisi', short:'👁️ Gözlem', w:20, v:40},
+  {label:'🛡️ Silahlanma Hakisi', short:'🛡️ Silahlanma', w:20, v:60},
+  {label:'👁️🛡️ Gözlem + Silahlanma', short:'👁️🛡️ İkisi', w:26, v:110},
+  {label:'👑 Fatih dahil üç Haki!', short:'👑 Üçü de', w:12, v:230},
+];
+
+// Her istatistik için 10 seviye (en kötüden en iyiye). Puan arka planda 1-10 olarak tutulur.
+const STATS = [
+  {id:'guc', name:'💪 Güç', lv:['Güçsüz','Çok Zayıf','Zayıf','Sıradan','Ortalama','Güçlü','Çok Güçlü','Dev Gibi','Canavar','Efsanevi']},
+  {id:'hiz', name:'⚡ Hız', lv:['Kaplumbağa','Çok Yavaş','Yavaş','Ağır','Ortalama','Çevik','Hızlı','Çok Hızlı','Şimşek','Işık Hızı']},
+  {id:'day', name:'🛡️ Dayanıklılık', lv:['Kırılgan','Çok Dayanıksız','Dayanıksız','Sıradan','Ortalama','Sağlam','Dayanıklı','Çelik Gibi','Yıkılmaz','Ölümsüz']},
+  {id:'zek', name:'🧠 Zeka', lv:['Kafasız','Çok Saf','Saf','Sıradan','Ortalama','Zeki','Çok Zeki','Stratejist','Deha','Vegapunk Ayarı']},
+  {id:'tek', name:'🎯 Teknik', lv:['Acemi','Çok Beceriksiz','Beceriksiz','Çaylak','Ortalama','Yetenekli','Usta','Büyük Usta','Virtüöz','Kusursuz']},
+];
+
+// Ustalık çarkları: m = çarpan
+const FRUIT_MASTERY = [
+  {label:'Yeni yemiş, kontrol edemiyor',short:'Kontrolsüz',w:15,m:0.6},
+  {label:'Acemi kullanıcı',short:'Acemi',w:25,m:0.8},
+  {label:'Alışmış',w:28,m:1.0},
+  {label:'Usta kullanıcı',short:'Usta',w:20,m:1.25},
+  {label:'Tam hakimiyet',short:'Tam Hakimiyet',w:12,m:1.5},
+];
+const SWORD_MASTERY = [
+  {label:'Acemi — kılıcı ters tutuyor',short:'Acemi',w:15,m:0.5},
+  {label:'Çırak',w:25,m:0.8},
+  {label:'Kendo Ustası',w:25,m:1.0},
+  {label:'Usta Kılıççı',w:18,m:1.3},
+  {label:'Büyük Kılıç Ustası',short:'Büyük Usta',w:12,m:1.7},
+  {label:'Dünyanın En İyi Kılıççısı',short:'Dünyanın En İyisi',w:5,m:2.2},
+];
+const HAKI_MASTERY = [
+  {label:'Zar zor kullanıyor',short:'Zayıf',w:25,m:0.6},
+  {label:'Orta seviye',short:'Orta',w:35,m:1.0},
+  {label:'Güçlü',w:28,m:1.4},
+  {label:'İleri seviye (Ryuo / gelecek görme)',short:'İleri Seviye',w:12,m:1.8},
+];
+// Unvan: taraf'a göre ödül / rütbe. v = güç bonusu
+const TITLE_VALUES = [{v:0,w:20},{v:20,w:25},{v:60,w:25},{v:120,w:15},{v:200,w:10},{v:300,w:5}];
+const TITLES = {
+  pirate:{q:'Ödülün ne kadar?', l:['Ödül yok','10 Milyon ฿','100 Milyon ฿','500 Milyon ฿','1 Milyar ฿','3 Milyar ฿ (Yonko)']},
+  marine:{q:'Rütben ne?',       l:['Er','Teğmen','Albay','Tuğamiral','Koramiral','Amiral']},
+  rev:   {q:'Ordudaki yerin?',  l:['Acemi üye','Ajan','Hücre Lideri','Komutan','Kurmay Başkanı','Lider']},
+  gov:   {q:'Birimin hangisi?', l:['Memur','CP1 Ajanı','CP5 Ajanı','CP9 Ajanı','CP0 Ajanı','Beş Yaşlı\'nın Sağ Kolu']},
+};
+
+const DIFFS = [
+  {id:'easy',   name:'Kolay',    emoji:'🟢', min:0,   max:299,  desc:'East Blue kötüleri'},
+  {id:'medium', name:'Orta',     emoji:'🟡', min:300, max:549,  desc:'Grand Line maceracıları'},
+  {id:'hard',   name:'Zor',      emoji:'🟠', min:550, max:749,  desc:'Yeni Dünya savaşçıları'},
+  {id:'vhard',  name:'Çok Zor',  emoji:'🔴', min:750, max:899,  desc:'Komutanlar ve süper yeniler'},
+  {id:'legend', name:'Efsane',   emoji:'💀', min:900, max:9999, desc:'Yonkolar, Amiraller, Efsaneler'},
+];
+
+const PALETTE = ['#e63946','#f4a261','#2a9d8f','#457b9d','#e9c46a','#8e44ad','#d35400','#16a085','#c0392b','#2980b9','#27ae60','#b8860b'];
+const PLAYER_COLORS = ['#e63946','#2a9d8f','#e9c46a','#457b9d','#8e44ad','#f4a261'];
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+const TAU = Math.PI*2;
+const mod = (a,n)=>((a%n)+n)%n;
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const state = {
+  fast:false, sound:true, players:[], usedFruits:new Set(), usedSwords:new Set(),
+  current:null, replay:null, singleDiff:DIFFS[1], multiCount:2,
+};
+
+/* ---------- audio ---------- */
+let actx=null, lastTick=0;
+function audio(){ if(!actx){ const AC=window.AudioContext||window.webkitAudioContext; if(AC) actx=new AC(); } if(actx&&actx.state==='suspended') actx.resume(); return actx; }
+function beep(freq,dur,vol=0.07,type='triangle',when=0){
+  if(!state.sound) return; const a=audio(); if(!a) return;
+  const t=a.currentTime+when, o=a.createOscillator(), g=a.createGain();
+  o.type=type; o.frequency.setValueAtTime(freq,t);
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+dur+0.02);
+}
+function tick(){ const now=performance.now(); if(now-lastTick<40) return; lastTick=now; beep(1200,0.025,0.04,'square'); }
+function ding(){ beep(880,0.15,0.07); beep(1320,0.2,0.05,'sine',0.08); }
+function fanfare(){ [523,659,784,1047,784,1047].forEach((f,i)=>beep(f,0.28,0.08,'triangle',i*0.13)); }
+function vibrate(p){ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} }
+
+/* =========================================================
+   WHEEL
+   ========================================================= */
+class Wheel{
+  constructor(cv){ this.cv=cv; this.ctx=cv.getContext('2d'); this.rot=0; this.segs=[]; window.addEventListener('resize',()=>this.draw()); }
+  setItems(items){
+    const total=items.reduce((s,i)=>s+(i.weight??1),0);
+    let a=0;
+    this.segs=items.map((it,i)=>{ const span=(it.weight??1)/total*TAU; const s={start:a,end:a+span,item:it,color:it.color||PALETTE[i%PALETTE.length]}; a+=span; return s; });
+    const n=this.segs.length;
+    if(n>1 && !items[n-1].color && this.segs[n-1].color===this.segs[0].color) this.segs[n-1].color=PALETTE[5];
+    this.draw();
+  }
+  draw(){
+    const size=this.cv.clientWidth; if(!size) return;
+    const dpr=window.devicePixelRatio||1, px=Math.round(size*dpr);
+    if(this.cv.width!==px){ this.cv.width=px; this.cv.height=px; }
+    const ctx=this.ctx; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,size,size);
+    const c=size/2, r=c-7, n=this.segs.length;
+    ctx.beginPath(); ctx.arc(c,c,c-1,0,TAU); ctx.fillStyle='#3b2410'; ctx.fill();
+    ctx.save(); ctx.translate(c,c); ctx.rotate(this.rot);
+    for(const s of this.segs){
+      ctx.beginPath(); ctx.moveTo(0,0); ctx.arc(0,0,r,s.start,s.end); ctx.closePath();
+      ctx.fillStyle=s.color; ctx.fill();
+      if(n<=70){ ctx.strokeStyle='rgba(0,0,0,.35)'; ctx.lineWidth=1; ctx.stroke(); }
+      const span=s.end-s.start, fs=Math.min(16, span*r*0.55, r*0.1);
+      if(fs>=7){
+        ctx.save(); ctx.rotate((s.start+s.end)/2);
+        ctx.textAlign='right'; ctx.textBaseline='middle';
+        ctx.font=`800 ${fs}px system-ui,-apple-system,sans-serif`;
+        const label=fitText(ctx, s.item.short||s.item.label, r*0.66);
+        ctx.lineWidth=3; ctx.strokeStyle='rgba(0,0,0,.6)'; ctx.strokeText(label,r-10,0);
+        ctx.fillStyle='#fff'; ctx.fillText(label,r-10,0); ctx.restore();
+      }
+    }
+    ctx.restore();
+    // pegs
+    for(let i=0;i<24;i++){ const a=i/24*TAU; ctx.beginPath(); ctx.arc(c+Math.cos(a)*(c-3.5),c+Math.sin(a)*(c-3.5),2,0,TAU); ctx.fillStyle='#f4c430'; ctx.fill(); }
+  }
+  pick(){
+    const total=this.segs.reduce((s,x)=>s+(x.end-x.start),0); let r=Math.random()*total;
+    for(let i=0;i<this.segs.length;i++){ r-=this.segs[i].end-this.segs[i].start; if(r<=0) return i; }
+    return this.segs.length-1;
+  }
+  indexAtPointer(){ const a=mod(-Math.PI/2-this.rot,TAU); return this.segs.findIndex(s=>a>=s.start&&a<s.end); }
+  spin(duration){
+    return new Promise(res=>{
+      const s=this.segs[this.pick()], span=s.end-s.start;
+      const target=s.start+span*(0.5+(Math.random()-0.5)*0.7);
+      const startRot=this.rot;
+      let delta=mod(-Math.PI/2-target,TAU)-mod(startRot,TAU); if(delta<0) delta+=TAU;
+      const end=startRot+delta+(duration<1500?3:6)*TAU;
+      const t0=performance.now(); let last=this.indexAtPointer();
+      const step=now=>{
+        const t=Math.min(1,(now-t0)/duration), e=1-Math.pow(1-t,4);
+        this.rot=startRot+(end-startRot)*e; this.draw();
+        const i=this.indexAtPointer(); if(i!==last){ last=i; tick(); }
+        if(t<1) requestAnimationFrame(step); else { this.rot=mod(end,TAU); this.draw(); res(s.item); }
+      };
+      requestAnimationFrame(step);
+    });
+  }
+}
+function fitText(ctx,text,max){
+  if(ctx.measureText(text).width<=max) return text;
+  let t=text; while(t.length>1 && ctx.measureText(t+'…').width>max) t=t.slice(0,-1);
+  return t+'…';
+}
+const wheel=new Wheel($('#wheel'));
+
+/* =========================================================
+   UI PRIMITIVES
+   ========================================================= */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  window.scrollTo(0,0);
+  if(id==='scr-wheel') requestAnimationFrame(()=>wheel.draw());
+}
+function waitTap(els){
+  return new Promise(res=>{
+    const h=()=>{ els.forEach(e=>e.removeEventListener('click',h)); res(); };
+    els.forEach(e=>e.addEventListener('click',h));
+  });
+}
+let gameToken=0; // ana menüye dönüldüğünde eski akışı iptal eder
+class Abort extends Error{}
+function check(tok){ if(tok!==gameToken) throw new Abort(); }
+
+async function spin({who,title,sub='',items,tok}){
+  check(tok);
+  show('scr-wheel');
+  $('#whoLabel').textContent=who||(state.current?state.current.name:'');
+  $('#stepTitle').textContent=title; $('#stepSub').textContent=sub;
+  wheel.setItems(items);
+  const rb=$('#resultBox'); rb.textContent=''; rb.className='result';
+  const btn=$('#actionBtn'), hub=$('#hub');
+  btn.textContent='🎡 ÇEVİR'; btn.disabled=false; hub.disabled=false;
+  if(state.current) $('#miniCard').innerHTML=cardHTML(state.current);
+  $('#peek').style.display=state.current?'':'none';
+  if(state.fast) await sleep(250); else await waitTap([btn,hub]);
+  check(tok);
+  btn.disabled=true; hub.disabled=true; btn.textContent='Dönüyor…';
+  audio();
+  const item=await wheel.spin(state.fast?1300:4300);
+  check(tok);
+  rb.innerHTML=esc(item.result||item.label); rb.className='result show';
+  ding(); vibrate(40);
+  btn.textContent='DEVAM ➜'; btn.disabled=false;
+  if(state.fast) await sleep(800); else await waitTap([btn]);
+  check(tok);
+  return item;
+}
+function showInfo(html,buttons=[{id:'ok',text:'Devam ➜',cls:'primary'}],tok){
+  check(tok);
+  $('#infoBody').innerHTML=html;
+  const box=$('#infoBtns'); box.innerHTML='';
+  show('scr-info');
+  return new Promise((res,rej)=>{
+    buttons.forEach(b=>{
+      const el=document.createElement('button'); el.className='btn '+(b.cls||''); el.textContent=b.text;
+      el.onclick=()=>{ if(tok!==undefined && tok!==gameToken) return rej(new Abort()); res(b.id); };
+      box.appendChild(el);
+    });
+  });
+}
+const yesNo=(yesLabel,yesW,noLabel,noW)=>[
+  {label:yesLabel,weight:yesW,value:true,color:'#27ae60'},
+  {label:noLabel,weight:noW,value:false,color:'#c0392b'},
+];
+
+/* =========================================================
+   POWER
+   ========================================================= */
+function powerOf(p){
+  const ms=p.mastery||{};
+  const stat=Object.values(p.stats).reduce((a,b)=>a+b,0)*6;
+  const fruit=Math.round(p.fruits.reduce((a,f)=>a+f.p*(f.awakened?1.6:1),0)*(ms.fruit?ms.fruit.m:1));
+  const sword=Math.round(p.swords.reduce((a,s)=>a+s.v,0)*(ms.sword?ms.sword.m:1));
+  const haki=Math.round((p.haki?p.haki.v:0)*(ms.haki?ms.haki.m:1));
+  const title=p.title?p.title.v:0;
+  const crew=p.crew?Math.round(p.crew.members.reduce((a,m)=>a+m.p,0)*0.1):0;
+  return {stat,fruit,sword,haki,title,crew,total:stat+fruit+sword+haki+title+crew};
+}
+const totalOf=x=>x.isNpc?x.total:powerOf(x).total;
+const npcTotal=c=>Math.round(c.p*1.5+200);
+
+function newPlayer(name,i){
+  return {name,color:PLAYER_COLORS[i%PLAYER_COLORS.length],faction:null,title:null,fruits:[],swords:[],haki:null,mastery:{},stats:{},crew:null};
+}
+
+function cardHTML(p){
+  const pw=powerOf(p);
+  const fruits=p.fruits.length?p.fruits.map(f=>`<div class="item"><span>🍎 ${esc(f.n)} no Mi <span class="badge ${f.awakened?'aw':'na'}">${f.awakened?'UYANMIŞ':'uyanmamış'}</span></span><em>${esc(f.t)} · ${Math.round(f.p*(f.awakened?1.6:1))}</em></div>`).join(''):`<div class="empty">${p.faction?'Meyve yok — denizde yüzebilirsin 🏊':'—'}</div>`;
+  const swords=p.swords.length?p.swords.map(s=>`<div class="item"><span>🗡️ ${esc(s.n)}</span><em>${esc(s.g)} · ${s.v}</em></div>`).join(''):`<div class="empty">—</div>`;
+  const stats=STATS.map(s=>{ const v=p.stats[s.id]; return `<div class="stat"><span>${s.name}</span><div class="bar"><i style="width:${(v||0)*10}%;background:hsl(${((v||1)-1)*13},75%,50%)"></i></div><b>${v?s.lv[v-1]:'–'}</b></div>`; }).join('');
+  const ms=p.mastery||{};
+  const mLine=x=>x?`<div class="mastery">⭐ Ustalık: ${esc(x.label)} (×${x.m})</div>`:'';
+  const crew=p.crew?`<div style="margin-bottom:4px"><b>${esc(p.crew.name)}</b> <span class="empty">(${p.crew.kind==='own'?'özel tayfa':'animeden'})</span></div><div class="crew">${p.crew.members.map(m=>`<span>${esc(m.n)} · ${m.p}</span>`).join('')}</div>`:`<div class="empty">—</div>`;
+  return `<div class="pcard" style="border-color:${p.color}">
+    <div class="head">
+      <div><div class="name">${esc(p.name)}</div><div class="fac">${p.faction?p.faction.emoji+' '+p.faction.name:'Taraf belirlenmedi'}${p.title?' · '+esc(p.title.label):''}</div></div>
+      <div class="power"><b>${pw.total}</b><span>TOPLAM GÜÇ</span></div>
+    </div>
+    <div class="sec"><h4>Şeytan Meyveleri</h4>${fruits}${mLine(ms.fruit)}</div>
+    <div class="sec"><h4>Kılıçlar</h4>${swords}${mLine(ms.sword)}</div>
+    <div class="sec"><h4>Haki</h4>${p.haki?`<div class="item"><span>${esc(p.haki.label)}</span><em>${p.haki.v}</em></div>`:'<div class="empty">—</div>'}${mLine(ms.haki)}</div>
+    <div class="sec"><h4>İstatistikler</h4>${stats}</div>
+    <div class="sec"><h4>Tayfa</h4>${crew}</div>
+    <div class="breakdown">
+      <span>İstatistik (toplam × 6)</span><b>${pw.stat}</b>
+      <span>Unvan / ödül</span><b>${pw.title}</b>
+      <span>Meyve (uyanış ×1.6, ustalık)</span><b>${pw.fruit}</b>
+      <span>Kılıç (ustalık)</span><b>${pw.sword}</b>
+      <span>Haki (seviye)</span><b>${pw.haki}</b>
+      <span>Tayfa bonusu (%10)</span><b>${pw.crew}</b>
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   CHARACTER BUILDER
+   ========================================================= */
+async function buildPlayer(p,tok){
+  state.current=p;
+  // 1) Taraf
+  const f=await spin({tok,title:'Tarafın ne?',sub:'Korsan mı, denizci mi?',items:FACTIONS.map(f=>({label:`${f.emoji} ${f.name}`,weight:f.w,value:f}))});
+  p.faction=f.value;
+
+  // 1b) Unvan / ödül / rütbe
+  const T=TITLES[p.faction.id];
+  const t=await spin({tok,title:T.q,sub:`${p.faction.emoji} ${p.faction.name}`,items:T.l.map((l,i)=>({label:l,weight:TITLE_VALUES[i].w,result:`${l} (+${TITLE_VALUES[i].v})`,value:{label:l,v:TITLE_VALUES[i].v}}))});
+  p.title=t.value;
+
+  // 2) Şeytan meyvesi
+  const eats=await spin({tok,title:'Şeytan meyvesi yedin mi?',items:yesNo('🍎 Evet',55,'🌊 Hayır',45)});
+  if(eats.value){
+    const cnt=await spin({tok,title:'Kaç meyve?',sub:'Karasakal gibi birden fazla olabilir!',items:[
+      {label:'1 meyve',weight:72,value:1},{label:'2 meyve',weight:22,value:2},{label:'3 meyve',weight:6,value:3}]});
+    for(let i=0;i<cnt.value;i++){
+      const tag=cnt.value>1?` (${i+1}/${cnt.value})`:'';
+      const type=await spin({tok,title:'Meyve türü'+tag,items:FRUIT_TYPES.map(t=>({label:`${t.emoji} ${t.id}`,weight:t.w,value:t.id}))});
+      let pool=FRUITS.filter(fr=>fr.t===type.value && !state.usedFruits.has(fr.n));
+      if(!pool.length) pool=FRUITS.filter(fr=>!state.usedFruits.has(fr.n));
+      const fr=await spin({tok,title:'Hangi meyve?'+tag,sub:`${type.value} · güç değerleri parantezde`,items:pool.map(x=>({label:`${x.n} (${x.p})`,short:x.n,result:`${x.n} no Mi! (${x.p})`,value:x}))});
+      state.usedFruits.add(fr.value.n);
+      const aw=await spin({tok,title:'Meyve uyanmış mı?',sub:`${fr.value.n} · uyanış gücü ×1.6`,items:yesNo('✨ Uyanmış',30,'💤 Uyanmamış',70)});
+      p.fruits.push({...fr.value,awakened:aw.value});
+    }
+    const fm=await spin({tok,title:'Meyvene ne kadar hakimsin?',sub:'Meyve gücünü çarpar',items:FRUIT_MASTERY.map(x=>({label:x.label,short:x.short,weight:x.w,result:`${x.label} (×${x.m})`,value:x}))});
+    p.mastery.fruit=fm.value;
+  }
+
+  // 3) Kılıç
+  const sw=await spin({tok,title:'Kılıç kullanıyor musun?',items:yesNo('🗡️ Evet',45,'✋ Hayır',55)});
+  if(sw.value){
+    const cnt=await spin({tok,title:'Kaç kılıç?',sub:'Üç kılıç = Santoryu!',items:[
+      {label:'1 kılıç',weight:50,value:1},{label:'2 kılıç',weight:30,value:2},{label:'3 kılıç (Santoryu)',short:'3 · Santoryu',weight:20,value:3}]});
+    for(let i=0;i<cnt.value;i++){
+      const pool=SWORDS.filter(s=>s.g==='Derecesiz'||!state.usedSwords.has(s.n));
+      const s=await spin({tok,title:`Kılıç ${i+1}/${cnt.value}`,sub:'Nadir kılıçların dilimi daha küçük',items:pool.map(x=>({label:x.n,weight:x.w,result:`${x.n} — ${x.g} (${x.v})`,value:x}))});
+      if(s.value.g!=='Derecesiz') state.usedSwords.add(s.value.n);
+      p.swords.push(s.value);
+    }
+    const sm=await spin({tok,title:'Kılıç ustalığın ne seviyede?',sub:'Kılıç gücünü çarpar',items:SWORD_MASTERY.map(x=>({label:x.label,short:x.short,weight:x.w,result:`${x.label} (×${x.m})`,value:x}))});
+    p.mastery.sword=sm.value;
+  }
+
+  // 4) Haki
+  const h=await spin({tok,title:'Haki',sub:'Fatih Hakisi milyonda bir doğar…',items:HAKI.map(x=>({label:x.label,short:x.short,weight:x.w,value:x}))});
+  p.haki=h.value;
+  if(p.haki.v>0){
+    const hm=await spin({tok,title:'Hakini ne kadar iyi kullanıyorsun?',sub:'Haki gücünü çarpar',items:HAKI_MASTERY.map(x=>({label:x.label,short:x.short,weight:x.w,result:`${x.label} (×${x.m})`,value:x}))});
+    p.mastery.haki=hm.value;
+  }
+
+  // 5) İstatistikler
+  for(const st of STATS){
+    const nums=st.lv.map((txt,i)=>({label:txt,value:i+1,color:`hsl(${i*13},70%,42%)`,result:`${st.name}: ${txt}`}));
+    const r=await spin({tok,title:st.name,sub:`${st.lv[0]} → ${st.lv[9]}`,items:nums});
+    p.stats[st.id]=r.value;
+  }
+
+  // 6) Tayfa
+  const kind=await spin({tok,title:'Tayfan nasıl olsun?',items:[
+    {label:'🏴 Kendi tayfam',weight:50,value:'own',color:'#2980b9'},
+    {label:'📜 Animedeki bir tayfa',short:'📜 Animeden',weight:50,value:'anime',color:'#d35400'}]});
+  if(kind.value==='anime'){
+    const crews=CREWS.filter(c=>c.f===p.faction.id);
+    const c=await spin({tok,title:`${p.faction.name} tayfası`,sub:'Hangi tayfaya katılıyorsun?',items:crews.map(x=>({label:x.name,value:x}))});
+    p.crew={name:c.value.name,kind:'anime',members:c.value.m.map(n=>CHAR_BY_NAME[n])};
+  }else{
+    const size=await spin({tok,title:'Tayfa kaç kişi?',items:[2,3,4,5,6,7,8].map(n=>({label:`${n} kişi`,value:n}))});
+    p.crew={name:`${p.name} ${p.faction.crewWord}`,kind:'own',members:[]};
+    for(let i=0;i<size.value;i++){
+      const pool=CHARACTERS.filter(c=>!p.crew.members.includes(c));
+      const m=await spin({tok,title:`Tayfa üyesi ${i+1}/${size.value}`,sub:`${pool.length} karakterlik dev çark!`,items:pool.map(c=>({label:c.n,result:`${c.n} katıldı! (${c.p})`,value:c}))});
+      p.crew.members.push(m.value);
+    }
+  }
+  state.current=null;
+}
+
+/* =========================================================
+   GAME FLOWS
+   ========================================================= */
+function resetGame(){
+  gameToken++; state.players=[]; state.usedFruits=new Set(); state.usedSwords=new Set(); state.current=null;
+  return gameToken;
+}
+function run(flow){ flow().catch(e=>{ if(!(e instanceof Abort)) { console.error(e); showInfo(`<h2 class="center">Bir şeyler ters gitti</h2><p class="sub">${esc(e.message)}</p>`,[{id:'home',text:'🏠 Ana Menü',cls:'primary'}]).then(goHome); } }); }
+
+async function runSingle(name,diff){
+  const tok=resetGame();
+  state.replay=()=>run(()=>runSingle(name,diff));
+  const p=newPlayer(name,0); state.players=[p];
+  await showInfo(`<div class="big-emoji">⛵</div><h2 class="center">${esc(name)}, macera başlıyor!</h2><p class="sub">Rakip zorluğu: ${diff.emoji} ${diff.name}</p>`,[{id:'ok',text:'Karakterimi oluştur 🎡',cls:'primary'}],tok);
+  await buildPlayer(p,tok);
+  await showInfo(`<h2 class="center">Karakterin hazır!</h2>${cardHTML(p)}`,[{id:'ok',text:'Rakibimi belirle ⚔️',cls:'primary'}],tok);
+  const pool=CHARACTERS.filter(c=>c.p>=diff.min&&c.p<=diff.max);
+  const o=await spin({tok,who:`${diff.emoji} ${diff.name} kademe`,title:'Rakibin kim?',sub:`${pool.length} karakterden biri`,items:pool.map(c=>({label:c.n,result:`${c.n} (${c.p})`,value:c}))});
+  const opp={name:o.value.n,total:npcTotal(o.value),isNpc:true,color:'#555b6e',char:o.value};
+  await showInfo(`<div class="big-emoji">${diff.emoji}</div>
+    <div class="pcard" style="border-color:#888">
+      <div class="head"><div><div class="name">${esc(opp.name)}</div><div class="fac">${diff.name} rakip · karakter gücü ${o.value.p}</div></div>
+      <div class="power"><b>${opp.total}</b><span>TOPLAM GÜÇ</span></div></div>
+      <div class="breakdown"><span>Karakter gücü × 1.5</span><b>${Math.round(o.value.p*1.5)}</b><span>Tecrübe bonusu</span><b>200</b></div>
+    </div>
+    <div class="pcard" style="border-color:${p.color}"><div class="head"><div class="name">${esc(p.name)}</div><div class="power"><b>${totalOf(p)}</b><span>TOPLAM GÜÇ</span></div></div></div>`,
+    [{id:'ok',text:'SAVAŞ! ⚔️',cls:'red'}],tok);
+  await finalBattle([p,opp],tok);
+}
+
+async function runMulti(names){
+  const tok=resetGame();
+  state.replay=()=>run(()=>runMulti(names));
+  state.players=names.map((n,i)=>newPlayer(n,i));
+  for(let i=0;i<state.players.length;i++){
+    const p=state.players[i];
+    await showInfo(`<div class="big-emoji">🏴‍☠️</div><h2 class="center">Sıra: <span style="color:${p.color}">${esc(p.name)}</span></h2><p class="sub">Telefonu ${esc(p.name)} oyuncusuna ver (${i+1}/${state.players.length})</p>`,[{id:'ok',text:'Hazırım! 🎡',cls:'primary'}],tok);
+    await buildPlayer(p,tok);
+    const last=i===state.players.length-1;
+    await showInfo(`<h2 class="center">${esc(p.name)} hazır!</h2>${cardHTML(p)}`,[{id:'ok',text:last?'BÜYÜK SAVAŞA GEÇ ⚔️':'Sıradaki oyuncu ➜',cls:last?'red':'primary'}],tok);
+  }
+  await finalBattle(state.players,tok);
+}
+
+async function finalBattle(list,tok){
+  const sum=list.reduce((a,x)=>a+totalOf(x),0);
+  const pct=x=>Math.round(totalOf(x)/sum*1000)/10;
+  const winner=await spin({tok,who:'⚔️ FİNAL',title:'BÜYÜK SAVAŞ',
+    sub:list.map(x=>`${x.name} %${pct(x)}`).join(' · '),
+    items:list.map(x=>({label:x.name,result:`🏆 ${x.name} kazandı!`,weight:totalOf(x),value:x,color:x.color}))});
+  fanfare(); vibrate([80,60,160]); confetti();
+  const sorted=[...list].sort((a,b)=>totalOf(b)-totalOf(a));
+  const w=winner.value;
+  const isPlayerWin=!w.isNpc;
+  const headline=list.some(x=>x.isNpc)?(isPlayerWin?'ZAFER! Korsan Kralı yolundasın! 👑':'Yenildin… Ama deniz bitmedi! 🌊'):`${esc(w.name)} KAZANDI! 👑`;
+  const choice=await showInfo(`<div class="big-emoji">${isPlayerWin?'🏆':'💀'}</div>
+    <h2 class="center">${headline}</h2>
+    <p class="sub">Kazanan: <b style="color:${w.color}">${esc(w.name)}</b> (şansı %${pct(w)} idi)</p>
+    ${sorted.map(x=>`<div class="rank ${x===w?'win':''}"><span><i class="dot" style="background:${x.color}"></i>${esc(x.name)}${x===w?' 👑':''}</span><span><b>${totalOf(x)}</b> <span class="empty">· %${pct(x)}</span></span></div>`).join('')}
+    ${list.filter(x=>!x.isNpc).length?`<details class="peek"><summary>📜 Tüm kartlar</summary>${list.filter(x=>!x.isNpc).map(cardHTML).join('')}</details>`:''}`,
+    [{id:'again',text:'🔁 Tekrar Oyna',cls:'primary'},{id:'home',text:'🏠 Ana Menü',cls:'ghost'}],tok);
+  if(choice==='again') state.replay(); else goHome();
+}
+
+function confetti(){
+  const em=['🎉','👑','🏴‍☠️','💰','⭐','🍖'];
+  for(let i=0;i<36;i++){
+    const d=document.createElement('div'); d.className='confetti';
+    d.textContent=em[i%em.length]; d.style.left=Math.random()*100+'vw';
+    d.style.animationDuration=(2+Math.random()*2.5)+'s'; d.style.animationDelay=(Math.random()*0.8)+'s';
+    document.body.appendChild(d); setTimeout(()=>d.remove(),5500);
+  }
+}
+
+/* =========================================================
+   SETUP SCREENS
+   ========================================================= */
+function goHome(){ gameToken++; state.current=null; show('scr-home'); }
+$('#homeBtn').onclick=()=>{
+  const inGame=!$('#scr-home').classList.contains('active')&&!$('#scr-single').classList.contains('active')&&!$('#scr-multi').classList.contains('active');
+  const hb=$('#homeBtn');
+  // Oyun sırasında yanlışlıkla çıkmamak için iki kez dokunma gerekir
+  if(inGame && !hb.classList.contains('warn')){
+    hb.classList.add('warn'); hb.textContent='Çık?';
+    clearTimeout(hb._t); hb._t=setTimeout(()=>{ hb.classList.remove('warn'); hb.textContent='🏠'; },2500);
+    return;
+  }
+  hb.classList.remove('warn'); hb.textContent='🏠';
+  goHome();
+};
+$('#soundBtn').onclick=()=>{ state.sound=!state.sound; $('#soundBtn').textContent=state.sound?'🔊':'🔇'; };
+function setFast(v){ state.fast=v; $('#fastToggle').checked=v; $('#fastBtn').classList.toggle('on',v); }
+$('#fastToggle').onchange=e=>setFast(e.target.checked);
+$('#fastBtn').onclick=()=>setFast(!state.fast);
+$('#goSingle').onclick=()=>{ renderDiffs(); show('scr-single'); };
+$('#goMulti').onclick=()=>{ renderCount(); show('scr-multi'); };
+
+function renderDiffs(){
+  const box=$('#diffChips'); box.innerHTML='';
+  DIFFS.forEach(d=>{
+    const n=CHARACTERS.filter(c=>c.p>=d.min&&c.p<=d.max).length;
+    const b=document.createElement('button'); b.className='chip'+(state.singleDiff===d?' sel':'');
+    b.innerHTML=`${d.emoji} <b>${d.name}</b><small>${d.desc} · ${n} karakter</small>`;
+    b.onclick=()=>{ state.singleDiff=d; renderDiffs(); };
+    box.appendChild(b);
+  });
+}
+$('#startSingle').onclick=()=>{
+  const name=$('#singleName').value.trim()||'Kaptan';
+  audio(); run(()=>runSingle(name,state.singleDiff));
+};
+
+function renderCount(){
+  const box=$('#countBtns'); box.innerHTML='';
+  for(let n=2;n<=6;n++){
+    const b=document.createElement('button'); b.textContent=n; if(n===state.multiCount) b.className='sel';
+    b.onclick=()=>{ state.multiCount=n; renderCount(); };
+    box.appendChild(b);
+  }
+  const wrap=$('#nameInputs'); const old=[...wrap.querySelectorAll('input')].map(i=>i.value);
+  wrap.innerHTML='';
+  for(let i=0;i<state.multiCount;i++){
+    const inp=document.createElement('input'); inp.type='text'; inp.maxLength=18;
+    inp.placeholder=`Oyuncu ${i+1}`; inp.value=old[i]||'';
+    inp.style.borderLeft=`5px solid ${PLAYER_COLORS[i]}`;
+    wrap.appendChild(inp);
+  }
+}
+$('#startMulti').onclick=()=>{
+  const names=[...$('#nameInputs').querySelectorAll('input')].map((i,k)=>i.value.trim()||`Oyuncu ${k+1}`);
+  audio(); run(()=>runMulti(names));
+};
+</script>
+</body>
+</html>
