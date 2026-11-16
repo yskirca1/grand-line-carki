@@ -137,7 +137,8 @@ details.peek summary{cursor:pointer;color:var(--muted);font-weight:600}
     <div class="panel" style="font-size:14px;color:var(--muted);line-height:1.5">
       <b style="color:var(--text)">Nasıl oynanır?</b><br>
       Taraf → Ödül/Rütbe → Şeytan meyvesi (kaç tane, hangisi, uyanmış mı, ne kadar hakimsin) →
-      Kılıç (kaç tane, hangisi, ustalık) → Haki (tür ve seviye) → İstatistikler → Tayfa.
+      Kılıç (kaç tane, hangisi, ustalık) → Haki (tür ve seviye) → İstatistikler →
+      Tayfa / Birlik / Ordu (sivilsen bu kısım atlanır).
       Oyun sırasında ⚡ düğmesiyle hızlı modu açıp kapatabilirsin.
       Her şey çarkla belirlenir. Sonunda toplam güçlere göre oranlanmış <b>Büyük Savaş</b> çarkı kazananı seçer.
     </div>
@@ -193,10 +194,24 @@ details.peek summary{cursor:pointer;color:var(--muted);font-weight:600}
    DATA
    ========================================================= */
 const FACTIONS = [
-  {id:'pirate', name:'Korsan',              emoji:'🏴‍☠️', w:45, crewWord:'Korsanları'},
-  {id:'marine', name:'Denizci',             emoji:'⚓',  w:30, crewWord:'Birliği'},
-  {id:'rev',    name:'Devrimci',            emoji:'✊',  w:15, crewWord:'Hücresi'},
-  {id:'gov',    name:'Dünya Hükümeti',      emoji:'🕶️', w:10, crewWord:'Ekibi'},
+  // g: tarafın grubu (tayfa / birlik / ordu…). Sivilin grubu yoktur, grup çarkları atlanır.
+  {id:'pirate', name:'Korsan', emoji:'🏴‍☠️', w:40, g:{
+    title:'Tayfa', bonus:'Tayfa', ownTag:'özel tayfa', crewWord:'Korsanları',
+    q:'Tayfan nasıl olsun?', own:'🏴 Kendi tayfam', anime:'📜 Animedeki bir tayfa',
+    animeQ:'Hangi tayfaya katılıyorsun?', sizeQ:'Tayfan kaç kişi?', member:'Tayfa üyesi', joined:'tayfaya katıldı'}},
+  {id:'marine', name:'Denizci', emoji:'⚓', w:27, g:{
+    title:'Birlik', bonus:'Birlik', ownTag:'kendi birliği', crewWord:'Birliği',
+    q:'Birliğin nasıl olsun?', own:'⚓ Kendi birliğim', anime:'📜 Animedeki bir birlik',
+    animeQ:'Hangi birliğe atandın?', sizeQ:'Birliğinde kaç kişi var?', member:'Birlik askeri', joined:'birliğe katıldı'}},
+  {id:'rev', name:'Devrimci', emoji:'✊', w:13, g:{
+    title:'Ordudaki Yoldaşların', bonus:'Ordu', ownTag:'kendi hücresi', crewWord:'Hücresi',
+    q:'Devrim Ordusunda kimlerle birliktesin?', own:'✊ Kendi hücrem', anime:'📜 Ordunun bir kanadı',
+    animeQ:'Ordunun hangi kanadındasın?', sizeQ:'Hücrende kaç devrimci var?', member:'Yoldaş', joined:'orduya katıldı'}},
+  {id:'gov', name:'Dünya Hükümeti', emoji:'🕶️', w:10, g:{
+    title:'Ajan Ekibi', bonus:'Ekip', ownTag:'kendi ekibi', crewWord:'Ekibi',
+    q:'Ekibin nasıl olsun?', own:'🕶️ Kendi ekibim', anime:'📜 Animedeki bir birim',
+    animeQ:'Hangi birime atandın?', sizeQ:'Ekibinde kaç ajan var?', member:'Ajan', joined:'ekibe katıldı'}},
+  {id:'civ', name:'Sivil', emoji:'🧑‍🌾', w:10, g:null},
 ];
 
 // [isim, güç]
@@ -339,12 +354,18 @@ const SWORDS = [
   ['Sıradan Kılıç','Derecesiz'],
 ].map(([n,g])=>({n,g,v:SWORD_GRADES[g].v,w:SWORD_GRADES[g].w}));
 
+// Haki türleri: v = taban güç, adv = o türün ileri seviyesi
+const HAKI_TYPES = {
+  gozlem:{n:'Gözlem Hakisi', e:'👁️', v:40,  adv:'Gelecek görme'},
+  silah: {n:'Silahlanma Hakisi', e:'🛡️', v:60,  adv:'Ryuo / içten yıkım'},
+  fatih: {n:'Fatih Hakisi', e:'👑', v:130, adv:'Fatih Hakisi kaplama'},
+};
 const HAKI = [
-  {label:'Haki yok', short:'❌ Yok', w:30, v:0},
-  {label:'👁️ Gözlem Hakisi', short:'👁️ Gözlem', w:26, v:40},
-  {label:'🛡️ Silahlanma Hakisi', short:'🛡️ Silahlanma', w:22, v:60},
-  {label:'👁️🛡️ Gözlem + Silahlanma', short:'👁️🛡️ İkisi', w:16, v:110},
-  {label:'👑 Fatih dahil üç Haki!', short:'👑 Üçü de', w:6, v:230},
+  {label:'Haki yok', short:'❌ Yok', w:30, types:[]},
+  {label:'👁️ Gözlem Hakisi', short:'👁️ Gözlem', w:26, types:['gozlem']},
+  {label:'🛡️ Silahlanma Hakisi', short:'🛡️ Silahlanma', w:22, types:['silah']},
+  {label:'👁️🛡️ Gözlem + Silahlanma', short:'👁️🛡️ İkisi', w:16, types:['gozlem','silah']},
+  {label:'👑 Fatih dahil üç Haki!', short:'👑 Üçü de', w:6, types:['gozlem','silah','fatih']},
 ];
 
 // Her istatistik için 10 seviye (en kötüden en iyiye). Puan arka planda 1-10 olarak tutulur.
@@ -376,7 +397,7 @@ const HAKI_MASTERY = [
   {label:'Zar zor kullanıyor',short:'Zayıf',w:34,m:0.6},
   {label:'Orta seviye',short:'Orta',w:36,m:1.0},
   {label:'Güçlü',w:22,m:1.4},
-  {label:'İleri seviye (Ryuo / gelecek görme)',short:'İleri Seviye',w:8,m:1.8},
+  {label:'İleri seviye',short:'İleri Seviye',w:8,m:1.8},
 ];
 // Unvan: taraf'a göre ödül / rütbe. v = güç bonusu
 const TITLE_VALUES = [{v:0,w:30},{v:20,w:28},{v:60,w:22},{v:120,w:12},{v:200,w:6},{v:300,w:2}];
@@ -580,9 +601,10 @@ const yesNo=(yesLabel,yesW,noLabel,noW)=>[
 function powerOf(p){
   const ms=p.mastery||{};
   const stat=Object.values(p.stats).reduce((a,b)=>a+b,0)*6;
-  const fruit=Math.round(p.fruits.reduce((a,f)=>a+f.p*(f.awakened?1.6:1),0)*(ms.fruit?ms.fruit.m:1));
+  const fruitPow=f=>Math.round(f.p*(f.awakened?1.6:1)*(f.mastery?f.mastery.m:1));
+  const fruit=p.fruits.reduce((a,f)=>a+fruitPow(f),0);
   const sword=Math.round(p.swords.reduce((a,s)=>a+s.v,0)*(ms.sword?ms.sword.m:1));
-  const haki=Math.round((p.haki?p.haki.v:0)*(ms.haki?ms.haki.m:1));
+  const haki=(p.hakis||[]).reduce((a,h)=>a+Math.round(h.v*h.mastery.m),0);
   const title=p.title?p.title.v:0;
   const crew=p.crew?Math.round(p.crew.members.reduce((a,m)=>a+m.p,0)*0.1):0;
   return {stat,fruit,sword,haki,title,crew,total:stat+fruit+sword+haki+title+crew};
@@ -596,29 +618,32 @@ function newPlayer(name,i){
 
 function cardHTML(p){
   const pw=powerOf(p);
-  const fruits=p.fruits.length?p.fruits.map(f=>`<div class="item"><span>🍎 ${esc(f.n)} no Mi <small style="color:var(--gold2)">(${esc(f.d)})</small> <span class="badge ${f.awakened?'aw':'na'}">${f.awakened?'UYANMIŞ':'uyanmamış'}</span></span><em>${esc(f.t)} · ${Math.round(f.p*(f.awakened?1.6:1))}</em></div>`).join(''):`<div class="empty">${p.faction?'Meyve yok — denizde yüzebilirsin 🏊':'—'}</div>`;
+  const ms=p.mastery||{};
+  const mLine=(x,word='Ustalık')=>x?`<div class="mastery">⭐ ${word}: ${esc(x.label)} (×${x.m})</div>`:'';
+  const fruits=p.fruits.length?p.fruits.map(f=>`<div class="item"><span>🍎 ${esc(f.n)} no Mi <small style="color:var(--gold2)">(${esc(f.d)})</small> <span class="badge ${f.awakened?'aw':'na'}">${f.awakened?'UYANMIŞ':'uyanmamış'}</span></span><em>${esc(f.t)} · ${Math.round(f.p*(f.awakened?1.6:1)*(f.mastery?f.mastery.m:1))}</em></div>${mLine(f.mastery,'Hakimiyet')}`).join(''):`<div class="empty">${p.faction?'Meyve yok — denizde yüzebilirsin 🏊':'—'}</div>`;
   const swords=p.swords.length?p.swords.map(s=>`<div class="item"><span>🗡️ ${esc(s.n)}</span><em>${esc(s.g)} · ${s.v}</em></div>`).join(''):`<div class="empty">—</div>`;
   const stats=STATS.map(s=>{ const v=p.stats[s.id]; return `<div class="stat"><span>${s.name}</span><div class="bar"><i style="width:${(v||0)*10}%;background:hsl(${((v||1)-1)*13},75%,50%)"></i></div><b>${v?s.lv[v-1]:'–'}</b></div>`; }).join('');
-  const ms=p.mastery||{};
-  const mLine=x=>x?`<div class="mastery">⭐ Ustalık: ${esc(x.label)} (×${x.m})</div>`:'';
-  const crew=p.crew?`<div style="margin-bottom:4px"><b>${esc(p.crew.name)}</b> <span class="empty">(${p.crew.kind==='own'?'özel tayfa':'animeden'})</span></div><div class="crew">${p.crew.members.map(m=>`<span>${esc(m.n)} · ${m.p}</span>`).join('')}</div>`:`<div class="empty">—</div>`;
+  const g=p.faction?p.faction.g:undefined;
+  const groupTitle=g===null?'Grup':(g?g.title:'Tayfa');
+  const crew=p.crew?`<div style="margin-bottom:4px"><b>${esc(p.crew.name)}</b> <span class="empty">(${p.crew.kind==='own'?g.ownTag:'animeden'})</span></div><div class="crew">${p.crew.members.map(m=>`<span>${esc(m.n)} · ${m.p}</span>`).join('')}</div>`
+    :`<div class="empty">${g===null?'Sivilsin, bir gruba bağlı değilsin.':'—'}</div>`;
   return `<div class="pcard" style="border-color:${p.color}">
     <div class="head">
       <div><div class="name">${esc(p.name)}</div><div class="fac">${p.faction?p.faction.emoji+' '+p.faction.name:'Taraf belirlenmedi'}${p.title?' · '+esc(p.title.label):''}</div></div>
       <div class="power"><b>${pw.total}</b><span>TOPLAM GÜÇ</span></div>
     </div>
-    <div class="sec"><h4>Şeytan Meyveleri</h4>${fruits}${mLine(ms.fruit)}</div>
+    <div class="sec"><h4>Şeytan Meyveleri</h4>${fruits}</div>
     <div class="sec"><h4>Kılıçlar</h4>${swords}${mLine(ms.sword)}</div>
-    <div class="sec"><h4>Haki</h4>${p.haki?`<div class="item"><span>${esc(p.haki.label)}</span><em>${p.haki.v}</em></div>`:'<div class="empty">—</div>'}${mLine(ms.haki)}</div>
+    <div class="sec"><h4>Haki</h4>${(p.hakis||[]).length?p.hakis.map(h=>`<div class="item"><span>${h.e} ${esc(h.n)}</span><em>${Math.round(h.v*h.mastery.m)}</em></div>${mLine(h.mastery)}`).join(''):`<div class="empty">${p.haki?'Haki yok':'—'}</div>`}</div>
     <div class="sec"><h4>İstatistikler</h4>${stats}</div>
-    <div class="sec"><h4>Tayfa</h4>${crew}</div>
+    <div class="sec"><h4>${groupTitle}</h4>${crew}</div>
     <div class="breakdown">
       <span>İstatistik (toplam × 6)</span><b>${pw.stat}</b>
       <span>Unvan / ödül</span><b>${pw.title}</b>
       <span>Meyve (uyanış ×1.6, ustalık)</span><b>${pw.fruit}</b>
       <span>Kılıç (ustalık)</span><b>${pw.sword}</b>
       <span>Haki (seviye)</span><b>${pw.haki}</b>
-      <span>Tayfa bonusu (%10)</span><b>${pw.crew}</b>
+      <span>${g?g.bonus:'Grup'} bonusu (%10)</span><b>${pw.crew}</b>
     </div>
   </div>`;
 }
@@ -629,13 +654,15 @@ function cardHTML(p){
 async function buildPlayer(p,tok){
   state.current=p;
   // 1) Taraf
-  const f=await spin({tok,title:'Tarafın ne?',sub:'Korsan mı, denizci mi?',items:FACTIONS.map(f=>({label:`${f.emoji} ${f.name}`,weight:f.w,value:f}))});
+  const f=await spin({tok,title:'Tarafın ne?',sub:'Korsan mı, denizci mi, yoksa sivil mi?',items:FACTIONS.map(f=>({label:`${f.emoji} ${f.name}`,weight:f.w,value:f}))});
   p.faction=f.value;
 
   // 1b) Unvan / ödül / rütbe
   const T=TITLES[p.faction.id];
+  if(T){
   const t=await spin({tok,title:T.q,sub:`${p.faction.emoji} ${p.faction.name}`,items:T.l.map((l,i)=>({label:l,weight:TITLE_VALUES[i].w,result:`${l} (+${TITLE_VALUES[i].v})`,value:{label:l,v:TITLE_VALUES[i].v}}))});
   p.title=t.value;
+  }
 
   // 2) Şeytan meyvesi
   const eats=await spin({tok,title:'Şeytan meyvesi yedin mi?',items:yesNo('🍎 Evet',55,'🌊 Hayır',45)});
@@ -650,10 +677,10 @@ async function buildPlayer(p,tok){
       const fr=await spin({tok,title:'Hangi meyve?'+tag,sub:type.value,items:pool.map(x=>({label:`${x.n} (${x.d})`,short:x.n,weight:rarity(x.p,300),sub:x.d,result:`${x.n} no Mi — ${x.d}! (güç ${x.p})`,value:x}))});
       state.usedFruits.add(fr.value.n);
       const aw=await spin({tok,title:'Meyve uyanmış mı?',sub:`${fr.value.n} · uyanış gücü ×1.6`,items:yesNo('✨ Uyanmış',20,'💤 Uyanmamış',80)});
-      p.fruits.push({...fr.value,awakened:aw.value});
+      // Her meyvenin hakimiyeti ayrı çarkla belirlenir
+      const fm=await spin({tok,title:`${fr.value.n} meyvene ne kadar hakimsin?`,sub:`${fr.value.d} · meyve gücünü çarpar`,items:FRUIT_MASTERY.map(x=>({label:x.label,short:x.short,weight:x.w,result:`${x.label} (×${x.m})`,value:x}))});
+      p.fruits.push({...fr.value,awakened:aw.value,mastery:fm.value});
     }
-    const fm=await spin({tok,title:'Meyvene ne kadar hakimsin?',sub:'Meyve gücünü çarpar',items:FRUIT_MASTERY.map(x=>({label:x.label,short:x.short,weight:x.w,result:`${x.label} (×${x.m})`,value:x}))});
-    p.mastery.fruit=fm.value;
   }
 
   // 3) Kılıç
@@ -674,9 +701,13 @@ async function buildPlayer(p,tok){
   // 4) Haki
   const h=await spin({tok,title:'Haki',sub:'Fatih Hakisi milyonda bir doğar…',items:HAKI.map(x=>({label:x.label,short:x.short,weight:x.w,value:x}))});
   p.haki=h.value;
-  if(p.haki.v>0){
-    const hm=await spin({tok,title:'Hakini ne kadar iyi kullanıyorsun?',sub:'Haki gücünü çarpar',items:HAKI_MASTERY.map(x=>({label:x.label,short:x.short,weight:x.w,result:`${x.label} (×${x.m})`,value:x}))});
-    p.mastery.haki=hm.value;
+  // Her Haki türünün ustalığı ayrı çarkla belirlenir
+  p.hakis=[];
+  for(const id of p.haki.types){
+    const ht=HAKI_TYPES[id];
+    const lvl=x=>x.m===1.8?`İleri seviye (${ht.adv})`:x.label;
+    const hm=await spin({tok,title:`${ht.e} ${ht.n} ne kadar iyi?`,sub:'Bu Haki türünün gücünü çarpar',items:HAKI_MASTERY.map(x=>({label:lvl(x),short:x.short,weight:x.w,result:`${ht.n}: ${lvl(x)} (×${x.m})`,value:{...x,label:lvl(x)}}))});
+    p.hakis.push({...ht,mastery:hm.value});
   }
 
   // 5) İstatistikler
@@ -686,21 +717,24 @@ async function buildPlayer(p,tok){
     p.stats[st.id]=r.value;
   }
 
-  // 6) Tayfa
-  const kind=await spin({tok,title:'Tayfan nasıl olsun?',items:[
-    {label:'🏴 Kendi tayfam',weight:50,value:'own',color:'#2980b9'},
-    {label:'📜 Animedeki bir tayfa',short:'📜 Animeden',weight:50,value:'anime',color:'#d35400'}]});
-  if(kind.value==='anime'){
-    const crews=CREWS.filter(c=>c.f===p.faction.id);
-    const c=await spin({tok,title:`${p.faction.name} tayfası`,sub:'Hangi tayfaya katılıyorsun?',items:crews.map(x=>({label:x.name,value:x}))});
-    p.crew={name:c.value.name,kind:'anime',members:c.value.m.map(n=>CHAR_BY_NAME[n])};
-  }else{
-    const size=await spin({tok,title:'Tayfa kaç kişi?',items:[2,3,4,5,6,7,8].map(n=>({label:`${n} kişi`,value:n}))});
-    p.crew={name:`${p.name} ${p.faction.crewWord}`,kind:'own',members:[]};
-    for(let i=0;i<size.value;i++){
-      const pool=CHARACTERS.filter(c=>!p.crew.members.includes(c));
-      const m=await spin({tok,title:`Tayfa üyesi ${i+1}/${size.value}`,sub:`${pool.length} karakterlik dev çark!`,items:pool.map(c=>({label:c.n,weight:rarity(c.p,1100),result:`${c.n} katıldı! (${c.p})`,value:c}))});
-      p.crew.members.push(m.value);
+  // 6) Grup: tayfa / birlik / ordu / ajan ekibi (sivilse atlanır)
+  const g=p.faction.g;
+  if(g){
+    const kind=await spin({tok,title:g.q,sub:`${p.faction.emoji} ${p.faction.name}`,items:[
+      {label:g.own,weight:50,value:'own',color:'#2980b9'},
+      {label:g.anime,short:'📜 Animeden',weight:50,value:'anime',color:'#d35400'}]});
+    if(kind.value==='anime'){
+      const crews=CREWS.filter(c=>c.f===p.faction.id);
+      const c=await spin({tok,title:g.animeQ,sub:`${p.faction.emoji} ${p.faction.name}`,items:crews.map(x=>({label:x.name,value:x}))});
+      p.crew={name:c.value.name,kind:'anime',members:c.value.m.map(n=>CHAR_BY_NAME[n])};
+    }else{
+      const size=await spin({tok,title:g.sizeQ,items:[2,3,4,5,6,7,8].map(n=>({label:`${n} kişi`,value:n}))});
+      p.crew={name:`${p.name} ${g.crewWord}`,kind:'own',members:[]};
+      for(let i=0;i<size.value;i++){
+        const pool=CHARACTERS.filter(c=>!p.crew.members.includes(c));
+        const m=await spin({tok,title:`${g.member} ${i+1}/${size.value}`,sub:`${pool.length} karakterlik dev çark!`,items:pool.map(c=>({label:c.n,weight:rarity(c.p,1100),result:`${c.n} ${g.joined}! (${c.p})`,value:c}))});
+        p.crew.members.push(m.value);
+      }
     }
   }
   state.current=null;
